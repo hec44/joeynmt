@@ -11,6 +11,7 @@ import torch.nn.functional as F
 
 from joeynmt.initialization import initialize_model
 from joeynmt.embeddings import Embeddings
+from joeynmt.graphEncoders import GraphEncoder
 from joeynmt.encoders import Encoder, RecurrentEncoder, TransformerEncoder
 from joeynmt.decoders import Decoder, RecurrentDecoder, TransformerDecoder
 from joeynmt.constants import PAD_TOKEN, EOS_TOKEN, BOS_TOKEN
@@ -240,7 +241,11 @@ def build_model(cfg: dict = None,
         encoder = TransformerEncoder(**cfg["encoder"],
                                      emb_size=src_embed.embedding_dim,
                                      emb_dropout=enc_emb_dropout)
-    else:
+    elif cfg["encoder"].get("type", "recurrent") == "graph":
+        encoder = GraphEncoder(**cfg["encoder"],
+                                     emb_size=src_embed.embedding_dim,
+                                     emb_dropout=enc_emb_dropout)
+    elif cfg["encoder"].get("type", "recurrent") == "recurrent":
         encoder = RecurrentEncoder(**cfg["encoder"],
                                    emb_size=src_embed.embedding_dim,
                                    emb_dropout=enc_emb_dropout)
