@@ -63,7 +63,7 @@ training:                           # specify training details here
     label_smoothing: 0.0            # label smoothing: reference tokens will have 1-label_smoothing probability instead of 1, rest of probability mass is uniformly distributed over the rest of the vocabulary, default: 0.0 (off)
 
 model:                              # specify your model architecture here
-    initializer: "xavier"           # initializer for all trainable weights (xavier, zeros, normal, uniform)
+    initializer: "normal"           # initializer for all trainable weights (xavier, zeros, normal, uniform)
     init_weight: 0.01               # weight to initialize; for uniform, will use [-weight, weight]
     init_gain: 1.0                  # gain for Xavier initializer (default: 1.0)
     bias_initializer: "zeros"       # initializer for bias terms (xavier, zeros, normal, uniform)
@@ -76,13 +76,11 @@ model:                              # specify your model architecture here
     tied_softmax: False             # tie trg embeddings and softmax (for Transformer; can be used together with tied_embeddings), default: False
     encoder:
         type: "graph"           # encoder type: "recurrent" for LSTM or GRU, or "transformer" for a Transformer
-        rnn_type: "gru"             # type of recurrent unit to use, either "gru" or "lstm", default: "lstm"
         embeddings:
             embedding_dim: 16       # size of embeddings
             scale: False            # scale the embeddings by sqrt of their size, default: False
             freeze: False           # if True, embeddings are not updated during training
         hidden_size: 30             # size of RNN
-        bidirectional: True         # use a bi-directional encoder, default: True
         dropout: 0.2                # apply dropout to the inputs to the RNN, default: 0.0
         num_layers: 3               # stack this many layers of equal size, default: 1
         freeze: False               # if True, encoder parameters are not updated during training (does not include embedding parameters)

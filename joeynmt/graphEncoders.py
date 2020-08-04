@@ -4,11 +4,16 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
+from torch_geometric.nn import GlobalAttention,GatedGraphConv,TopKPooling
+from torch_geometric.data import Data,Batch
+from torch.nn import Sequential as Seq, Linear as Lin, ReLU
+
 from joeynmt.helpers import freeze_params
-from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from joeynmt.transformer_layers import TransformerEncoderLayer,PositionalEncoding
 from joeynmt.encoders import Encoder
+import torch.nn.functional as F
 import pdb
+
 
 class GraphEncoder(Encoder):
     """
@@ -18,19 +23,15 @@ class GraphEncoder(Encoder):
     """Encodes a sequence of word embeddings"""
     #pylint: disable=unused-argument
     def __init__(self,
-                 rnn_type: str = "gru",
                  hidden_size: int = 1,
                  emb_size: int = 1,
                  num_layers: int = 1,
                  dropout: float = 0.,
                  emb_dropout: float = 0.,
-                 bidirectional: bool = True,
                  freeze: bool = False,
                  **kwargs) -> None:
         """
         Create a new recurrent encoder.
-
-        :param rnn_type: RNN type: `gru` or `lstm`.
         :param hidden_size: Size of each RNN.
         :param emb_size: Size of the word embeddings.
         :param num_layers: Number of encoder RNN layers.
@@ -44,17 +45,20 @@ class GraphEncoder(Encoder):
         super(GraphEncoder, self).__init__()
 
         self.emb_dropout = torch.nn.Dropout(p=emb_dropout, inplace=False)
-        self.type = rnn_type
         self.emb_size = emb_size
+        self.num_layers=num_layers
+        self.hidden_size=hidden_size
+   
 
-        rnn = nn.GRU if rnn_type == "gru" else nn.LSTM
 
-        self.rnn = rnn(
-            emb_size, hidden_size, num_layers, batch_first=True,
-            bidirectional=bidirectional,
-            dropout=dropout if num_layers > 1 else 0.)
+        self.gate_nn = Seq(Lin(hidden_size, hidden_size), ReLU(), Lin(channels, 1))
+        self.gAtt = GlobalAttention(self.gate_nn)
 
-        self._output_size = 2 * hidden_size if bidirectional else hidden_size
+
+        self.ggnn = GatedGraphConv(
+            hidden_size, num_layers)
+
+        self._output_size = hidden_size
 
         if freeze:
             freeze_params(self)
@@ -101,32 +105,32 @@ class GraphEncoder(Encoder):
 
         # apply dropout to the rnn input
         embed_src = self.emb_dropout(embed_src)
+        
+        ###HARDCODING DATASET
+        batch_size=embed_src.shape[0]
+        sent_length=embed_src.shape[1]
+        origin,destiny=self.create_simple_edges(batch_size,sent_length)
+        edge_index = torch.tensor([origin,
+                           destiny], dtype=torch.long)
+        
+        data = Batch(x=embed_src.view(-1,self.emb_size), edge_index=edge_index)
         pdb.set_trace()
-        packed = pack_padded_sequence(embed_src, src_length, batch_first=True)
-        output, hidden = self.rnn(packed)
-
-        #pylint: disable=unused-variable
-        if isinstance(hidden, tuple):
-            hidden, memory_cell = hidden
-
-        output, _ = pad_packed_sequence(output, batch_first=True)
-        # hidden: dir*layers x batch x hidden
-        # output: batch x max_length x directions*hidden
-        batch_size = hidden.size()[1]
-        # separate final hidden states by layer and direction
-        hidden_layerwise = hidden.view(self.rnn.num_layers,
-                                       2 if self.rnn.bidirectional else 1,
-                                       batch_size, self.rnn.hidden_size)
-        # final_layers: layers x directions x batch x hidden
-
-        # concatenate the final states of the last layer for each directions
-        # thanks to pack_padded_sequence final states don't include padding
-        fwd_hidden_last = hidden_layerwise[-1:, 0]
-        bwd_hidden_last = hidden_layerwise[-1:, 1]
-
-        # only feed the final state of the top-most layer to the decoder
-        #pylint: disable=no-member
-        hidden_concat = torch.cat(
-            [fwd_hidden_last, bwd_hidden_last], dim=2).squeeze(0)
-        # final: batch x directions*hidden
+        x, edge_index, batch = data.x, data.edge_index, data.batch
+        pdb.set_trace()
+        x = F.relu(self.ggnn(x, edge_index))
+        pdb.set_trace()
+        #x= self.pool1(x, x)
+        output=x.view((batch_size,sent_length,-1))
+        hidden_concat=torch.zeros((batch_size,self.hidden_size))
+        pdb.set_trace()
         return output, hidden_concat
+    def create_simple_edges(self,num_sentences,len_sentences):
+      final_edges=[]
+      for i in range(num_sentences):
+        if i==0:
+          sentence_edges=list(range(len_sentences))
+        else:
+          sentence_edges=list(range((len_sentences*i),len_sentences*(i+1)))
+    
+        final_edges=final_edges+sentence_edges[1:]+[sentence_edges[0]]
+      return range(num_sentences*len_sentences),final_edges
