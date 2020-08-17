@@ -34,5 +34,5 @@ def doc_2_conll(input_file, output_file, lang='en'):
     output_doc.close()
 
 if __name__ == "__main__":
-    doc_2_conll("/home/hec44/Documents/encodingRepresentations/experiments/ggnnBaseline/joeynmt/test/data/toy/dev.en",\
-        "/home/hec44/Documents/encodingRepresentations/experiments/ggnnBaseline/joeynmt/test/data/toy/dev.conll")
+    doc_2_conll("/home/hec44/Documents/joeynmt/test/data/toy/dev.en",\
+        "/home/hec44/Documents/joeynmt/test/data/toy/dev.conll")

@@ -11,6 +11,7 @@ from torch.nn import Sequential as Seq, Linear as Lin, ReLU
 from joeynmt.helpers import freeze_params
 from joeynmt.transformer_layers import TransformerEncoderLayer,PositionalEncoding
 from joeynmt.encoders import Encoder
+from joeynmt.vocabulary import Vocabulary
 import torch.nn.functional as F
 import pdb
 
@@ -29,6 +30,9 @@ class GraphEncoder(Encoder):
                  dropout: float = 0.,
                  emb_dropout: float = 0.,
                  freeze: bool = False,
+                 edge_org_vocab: Vocabulary = None,
+                 edge_trg_vocab: Vocabulary = None,
+                 positional_en_vocab: Vocabulary = None
                  **kwargs) -> None:
         """
         Create a new recurrent encoder.
@@ -48,7 +52,10 @@ class GraphEncoder(Encoder):
         self.emb_size = emb_size
         self.num_layers=num_layers
         self.hidden_size=hidden_size
-   
+
+        self.edge_org_vocab=edge_org_vocab
+        self.edge_trg_vocab=edge_trg_vocab
+        self.positional_en_vocab=positional_en_vocab
 
 
         self.gate_nn = Seq(Lin(hidden_size, hidden_size), ReLU(), Lin(channels, 1))
@@ -80,9 +87,13 @@ class GraphEncoder(Encoder):
         assert len(src_length.shape) == 1
 
     #pylint: disable=arguments-differ
-    def forward(self, embed_src: Tensor, src_length: Tensor, mask: Tensor) \
+    def forward(self, embed_src: Tensor, src_length: Tensor, mask: Tensor,
+                edge_org_src: Tensor, edge_org_length: Tensor, edge_org_mask: Tensor,
+                edge_trg_src: Tensor, edge_trg_length: Tensor, edge_trg_mask: Tensor,
+                pe_src: Tensor, pe_length: Tensor, pe_mask: Tensor) \
             -> (Tensor, Tensor):
         """
+        TODO: add vocabularies for edges and PES
         Applies a bidirectional RNN to sequence of embeddings x.
         The input mini-batch x needs to be sorted by src length.
         x and mask should have the same dimensions [batch, time, dim].

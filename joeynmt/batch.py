@@ -30,6 +30,13 @@ class Batch:
         self.trg_lengths = None
         self.ntokens = None
         self.use_cuda = use_cuda
+        
+        #graph changes
+        self.edge_org = None
+        self.edge_trg = None
+        self.edge_lengths = None
+        self.pes = None
+        self.pes_lengths = None
 
         if hasattr(torch_batch, "trg"):
             trg, trg_lengths = torch_batch.trg
@@ -41,6 +48,15 @@ class Batch:
             # we exclude the padded areas from the loss computation
             self.trg_mask = (self.trg_input != pad_index).unsqueeze(1)
             self.ntokens = (self.trg != pad_index).data.sum().item()
+
+        if hasattr(batch, "edge_org"):
+            self.edge_org, edge_org_lengths = torch_batch.edge_org
+            self.edge_trg, edge_trg_lengths = torch_batch.edge_trg
+            self.pes, self.pes_lengths = torch_batch.positional_en
+            if edge_org_lengths==edge_trg_lengths:
+                self.edge_lengths=edge_org_lengths
+            else:
+                raise Exception("len of edge org and edge trg is different error in code")
 
         if use_cuda:
             self._make_cuda()
@@ -89,7 +105,16 @@ class Batch:
             self.trg_lengths = sorted_trg_lengths
             self.trg = sorted_trg
 
+        if self.edge_org is not None:
+            self.edge_org = self.edge_org[perm_index] 
+            self.edge_trg = self.edge_trg[perm_index]
+            self.edge_lengths = self.edge_lengths[perm_index]
+            self.pes = self.pes[perm_index]
+            self.pes_lengths = self.pes_lengths[perm_index]
+
         if self.use_cuda:
             self._make_cuda()
 
         return rev_index
+
+
