@@ -32,7 +32,7 @@ class GraphEncoder(Encoder):
                  freeze: bool = False,
                  edge_org_vocab: Vocabulary = None,
                  edge_trg_vocab: Vocabulary = None,
-                 positional_en_vocab: Vocabulary = None
+                 positional_en_vocab: Vocabulary = None,
                  **kwargs) -> None:
         """
         Create a new recurrent encoder.
@@ -88,9 +88,7 @@ class GraphEncoder(Encoder):
 
     #pylint: disable=arguments-differ
     def forward(self, embed_src: Tensor, src_length: Tensor, mask: Tensor,
-                edge_org_src: Tensor, edge_org_length: Tensor, edge_org_mask: Tensor,
-                edge_trg_src: Tensor, edge_trg_length: Tensor, edge_trg_mask: Tensor,
-                pe_src: Tensor, pe_length: Tensor, pe_mask: Tensor) \
+                batch: Batch) \
             -> (Tensor, Tensor):
         """
         TODO: add vocabularies for edges and PES

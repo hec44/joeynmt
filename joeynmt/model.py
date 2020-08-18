@@ -57,7 +57,7 @@ class Model(nn.Module):
 
     # pylint: disable=arguments-differ
     def forward(self, src: Tensor, trg_input: Tensor, src_mask: Tensor,
-                src_lengths: Tensor, trg_mask: Tensor = None) -> (
+                src_lengths: Tensor, trg_mask: Tensor = None,batch: Batch = None) -> (
         Tensor, Tensor, Tensor, Tensor):
         """
         First encodes the source sentence.
@@ -72,7 +72,7 @@ class Model(nn.Module):
         """
         encoder_output, encoder_hidden = self.encode(src=src,
                                                      src_length=src_lengths,
-                                                     src_mask=src_mask)
+                                                     src_mask=src_mask,batch=batch)
         unroll_steps = trg_input.size(1)
         return self.decode(encoder_output=encoder_output,
                            encoder_hidden=encoder_hidden,
@@ -80,7 +80,7 @@ class Model(nn.Module):
                            unroll_steps=unroll_steps,
                            trg_mask=trg_mask)
 
-    def encode(self, src: Tensor, src_length: Tensor, src_mask: Tensor) \
+    def encode(self, src: Tensor, src_length: Tensor, src_mask: Tensor,batch: Batch = None) \
         -> (Tensor, Tensor):
         """
         Encodes the source sentence.
@@ -90,7 +90,7 @@ class Model(nn.Module):
         :param src_mask:
         :return: encoder outputs (output, hidden_concat)
         """
-        return self.encoder(self.src_embed(src), src_length, src_mask)
+        return self.encoder(self.src_embed(src), src_length, src_mask,batch)
 
     def decode(self, encoder_output: Tensor, encoder_hidden: Tensor,
                src_mask: Tensor, trg_input: Tensor,
@@ -133,7 +133,8 @@ class Model(nn.Module):
             out, hidden, att_probs, _ = self.forward(
                 src=batch.src, trg_input=batch.trg_input,
                 src_mask=batch.src_mask, src_lengths=batch.src_lengths,
-                trg_mask=batch.trg_mask)            
+                trg_mask=batch.trg_mask,batch=batch) 
+         
         else:
             out, hidden, att_probs, _ = self.forward(
                 src=batch.src, trg_input=batch.trg_input,
