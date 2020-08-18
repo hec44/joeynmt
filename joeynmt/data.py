@@ -16,7 +16,7 @@ from joeynmt.constants import UNK_TOKEN, EOS_TOKEN, BOS_TOKEN, PAD_TOKEN
 from joeynmt.vocabulary import build_vocab, Vocabulary
 
 #Graph joeynmt
-from graphJoeynmt import dataLoader
+from joeynmt.graphJoeynmt import dataLoader
 
 def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                                   Vocabulary, Vocabulary):
@@ -81,8 +81,8 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                            batch_first=True, lower=True,
                            include_lengths=True)
 
-    train_data = dataLoader.GraphTranslationDataset(train_path + src_lang,
-                                    train_path + trg_lang,
+    train_data = dataLoader.GraphTranslationDataset(train_path +'.'+ src_lang,
+                                    train_path +'.'+ trg_lang,
                                     fields=(src_field, trg_field,edge_org_field,\
                                     edge_trg_field,positional_en_field),
                                     filter_pred=
@@ -138,16 +138,16 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
             random_state=random.getstate())
         train_data = keep
 
-    dev_data = dataLoader.GraphTranslationDataset(dev_path + src_lang,
-                                    dev_path + trg_lang,
+    dev_data = dataLoader.GraphTranslationDataset(dev_path +'.' +src_lang,
+                                    dev_path +'.'+ trg_lang,
                                     fields=(src_field, trg_field,edge_org_field,\
                                     edge_trg_field,positional_en_field))
     test_data = None
     if test_path is not None:
         # check if target exists
         if os.path.isfile(test_path + "." + trg_lang):
-            test_data = dataLoader.GraphTranslationDataset(test_data + src_lang,
-                                    test_data + trg_lang,
+            test_data = dataLoader.GraphTranslationDataset(test_path +'.'+ src_lang,
+                                    test_path +'.'+ trg_lang,
                                     fields=(src_field, trg_field,edge_org_field,\
                                     edge_trg_field,positional_en_field))
         else:
@@ -253,6 +253,7 @@ def load_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                 fields=(src_field, trg_field))
         else:
             #TODO: create MONO dataset for graph encoded input
+            pass
     src_field.vocab = src_vocab
     trg_field.vocab = trg_vocab
     return train_data, dev_data, test_data, src_vocab, trg_vocab

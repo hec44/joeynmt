@@ -258,9 +258,9 @@ def build_model(cfg: dict = None,
         encoder = GraphEncoder(**cfg["encoder"],
                                      emb_size=src_embed.embedding_dim,
                                      emb_dropout=enc_emb_dropout,
-                                     edge_org_vocab: edge_org_vocab,
-                                     edge_trg_vocab: edge_trg_vocab,
-                                     positional_en_vocab: positional_en_vocab)
+                                     edge_org_vocab = edge_org_vocab,
+                                     edge_trg_vocab = edge_trg_vocab,
+                                     positional_en_vocab = positional_en_vocab)
     elif cfg["encoder"].get("type", "recurrent") == "recurrent":
         encoder = RecurrentEncoder(**cfg["encoder"],
                                    emb_size=src_embed.embedding_dim,

@@ -633,7 +633,7 @@ def train(cfg_file: str) -> None:
 
     # build an encoder-decoder model
     if cfg["model"]["encoder"].get("type", "recurrent") == "graph":
-        model = build_model(cfg["model"], src_vocab=src_vocab, trg_vocab=trg_vocab\
+        model = build_model(cfg["model"], src_vocab=src_vocab, trg_vocab=trg_vocab,\
                             edge_org_vocab=edge_org_vocab,edge_trg_vocab=edge_trg_vocab,\
                             positional_en_vocab=positional_en_vocab)
     else:

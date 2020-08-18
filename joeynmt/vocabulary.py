@@ -184,6 +184,14 @@ def build_vocab(field: str, max_size: int, min_freq: int, dataset: Dataset,
             elif field == "trg":
                 tokens.extend(i.trg)
 
+            #add edge tokens
+            elif field == "edge_org":
+                tokens.extend(i.edge_org)
+            elif field == "edge_trg":
+                tokens.extend(i.edge_trg)
+            elif field =="positional_en":
+                tokens.extend(i.positional_en)
+
         counter = Counter(tokens)
         if min_freq > -1:
             counter = filter_min(counter, min_freq)

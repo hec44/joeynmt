@@ -29,9 +29,6 @@ class GraphTranslationDataset(data.Dataset):
         
         target_words=self.read_text_file(trg_file)
         assert len(source_words)==len(target_words),"Mismatch of source and tagret sentences"
-        print(pes)
-        print(targets)
-        print(origins)
         for i in range(len(source_words)):
                 src_line, trg_line = " ".join(source_words[i]),target_words[i]
                 src_line, trg_line = src_line.strip(), trg_line.strip()
