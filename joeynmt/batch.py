@@ -3,7 +3,7 @@
 """
 Implementation of a mini-batch.
 """
-
+import torch
 
 class Batch:
     """Object for holding a batch of data with mask during training.
@@ -49,11 +49,11 @@ class Batch:
             self.trg_mask = (self.trg_input != pad_index).unsqueeze(1)
             self.ntokens = (self.trg != pad_index).data.sum().item()
 
-        if hasattr(batch, "edge_org"):
+        if hasattr(torch_batch, "edge_org"):
             self.edge_org, edge_org_lengths = torch_batch.edge_org
             self.edge_trg, edge_trg_lengths = torch_batch.edge_trg
             self.pes, self.pes_lengths = torch_batch.positional_en
-            if edge_org_lengths==edge_trg_lengths:
+            if torch.all(edge_org_lengths.eq(edge_trg_lengths)):
                 self.edge_lengths=edge_org_lengths
             else:
                 raise Exception("len of edge org and edge trg is different error in code")
