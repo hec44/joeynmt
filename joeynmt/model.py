@@ -163,7 +163,7 @@ class Model(nn.Module):
         """
         encoder_output, encoder_hidden = self.encode(
             batch.src, batch.src_lengths,
-            batch.src_mask)
+            batch.src_mask,batch=batch)
 
         # if maximum output length is not globally specified, adapt to src len
         if max_output_length is None:

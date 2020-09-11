@@ -3,11 +3,11 @@ name: "my_experiment"
 # This configuration serves the purpose of documenting and explaining the settings, *NOT* as an example for good hyperparameter settings.
 
 data: # specify your data here
-    src: "de"                       # src language: expected suffix of train files, e.g. "train.de"
-    trg: "en"                       # trg language
-    train: "test/data/toy/train"    # training data
+    src: "conll"                       # src language: expected suffix of train files, e.g. "train.de"
+    trg: "de"                       # trg language
+    train: "test/data/toy/dev"    # training data
     dev: "test/data/toy/dev"        # development data for validation
-    test: "test/data/toy/test"      # test data for testing final model; optional
+    test: "test/data/toy/dev"      # test data for testing final model; optional
     random_train_subset: -1         # select this many training examples randomly for training and discard the rest, -1: all
     level: "word"                   # segmentation level: either "word", "bpe" or "char"
     lowercase: True                 # lowercase the data, also for validation
@@ -98,4 +98,4 @@ model:                              # specify your model architecture here
         input_feeding: True         # combine hidden state and attention vector before feeding to rnn, default: True
         init_hidden: "last"         # initialized the decoder hidden state: use linear projection of last encoder state ("bridge") or simply the last state ("last") or zeros ("zero"), default: "bridge"
         attention: "bahdanau"       # attention mechanism, choices: "bahdanau" (MLP attention), "luong" (bilinear attention), default: "bahdanau"
-        freeze: False                  # if True, decoder parameters are not updated during training (does not include embedding parameters, but attention)
+        freeze: False  
