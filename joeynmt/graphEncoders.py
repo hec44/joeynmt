@@ -164,4 +164,3 @@ class GraphEncoder(Encoder):
     
         final_edges=final_edges+sentence_edges[1:]+[sentence_edges[0]]
       return range(num_sentences*len_sentences),final_edges
-self.edge_org_vocab.numericalize([batch.edge_org,batch.edge_lengths])
