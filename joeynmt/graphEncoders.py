@@ -112,22 +112,10 @@ class GraphEncoder(Encoder):
                                          src_length=src_length,
                                          mask=mask)
 
-        # apply dropout to the rnn input
+        # apply dropout to the emmbeding input
         embed_src = self.emb_dropout(embed_src)
-        pdb.set_trace()
         data=self.reorder_edges(embed_src,batch)
-        pdb.set_trace()
-        ###HARDCODING DATASET
-        batch_size=embed_src.shape[0]
-        sent_length=embed_src.shape[1]
-        origin,destiny=self.create_simple_edges(batch_size,sent_length)
-        edge_index = torch.tensor([origin,
-                           destiny], dtype=torch.long)
-        
-        data = Batch(x=embed_src.view(-1,self.emb_size), edge_index=edge_index)
-        pdb.set_trace()
         x, edge_index, batch = data.x, data.edge_index, data.batch
-        pdb.set_trace()
         x = F.relu(self.ggnn(x, edge_index))
         pdb.set_trace()
         #x= self.pool1(x, x)
@@ -144,13 +132,13 @@ class GraphEncoder(Encoder):
         orgs=[]
         trgs=[]
         for i,edge_orgs in enumerate(batch.edge_org):
-            for j,edge_org in edge_orgs:
+            for j,edge_org in edge_orgs: 
                 org=self.edge_org_vocab.vocab.itos[edge_org]
                 trg=self.edge_trg_vocab.vocab.itos[batch.edge_trg[i][j]]
                 if org.isdigit():
                     orgs.append(int(org))
                     trgs.append(int(trg))
-            data_list.append(Data(embed_src[i],torch.tensor([org,trg])))
+            data_list.append(Data(embed_src[i],torch.tensor([orgs,trgs])))
 
         return Batch.from_data_list(data_list)
     def reorder_pes(self,x):
