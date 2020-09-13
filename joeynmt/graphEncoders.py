@@ -151,7 +151,7 @@ class GraphEncoder(Encoder):
                     trgs.append(int(trg))
             data_list.append(Data(embed_src[i],torch.tensor([org,trg])))
 
-        return batch = Batch.from_data_list(data_list)
+        return Batch.from_data_list(data_list)
     def reorder_pes(self,x):
         pass
     def create_simple_edges(self,num_sentences,len_sentences):
