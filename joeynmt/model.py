@@ -129,7 +129,7 @@ class Model(nn.Module):
         :return: batch_loss: sum of losses over non-pad elements in the batch
         """
         # pylint: disable=unused-variable
-        if batch.edge_org is not None:
+        if hasattr(batch,'edge_org'):
             out, hidden, att_probs, _ = self.forward(
                 src=batch.src, trg_input=batch.trg_input,
                 src_mask=batch.src_mask, src_lengths=batch.src_lengths,

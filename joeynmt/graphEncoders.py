@@ -58,7 +58,7 @@ class GraphEncoder(Encoder):
         self.positional_en_vocab=positional_en_vocab
 
 
-        self.gate_nn = Seq(Lin(hidden_size, hidden_size), ReLU(), Lin(channels, 1))
+        self.gate_nn = Seq(Lin(hidden_size, hidden_size), ReLU(), Lin(hidden_size, 1))
         self.gAtt = GlobalAttention(self.gate_nn)
 
 
@@ -114,7 +114,7 @@ class GraphEncoder(Encoder):
 
         # apply dropout to the rnn input
         embed_src = self.emb_dropout(embed_src)
-        
+        pdb.set_trace()
         ###HARDCODING DATASET
         batch_size=embed_src.shape[0]
         sent_length=embed_src.shape[1]
