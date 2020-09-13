@@ -114,6 +114,7 @@ class GraphEncoder(Encoder):
 
         # apply dropout to the rnn input
         embed_src = self.emb_dropout(embed_src)
+        pdb.set_trace()
         data=self.reorder_edges(embed_src,batch)
         pdb.set_trace()
         ###HARDCODING DATASET
