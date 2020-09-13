@@ -114,6 +114,7 @@ class GraphEncoder(Encoder):
 
         # apply dropout to the rnn input
         embed_src = self.emb_dropout(embed_src)
+        data=self.reorder_edges(embed_src,batch)
         pdb.set_trace()
         ###HARDCODING DATASET
         batch_size=embed_src.shape[0]
@@ -133,6 +134,26 @@ class GraphEncoder(Encoder):
         hidden_concat=torch.zeros((batch_size,self.hidden_size))
         pdb.set_trace()
         return output, hidden_concat
+    def reorder_edges(self,embed_src,batch):
+        """
+        Input: batch with edge_org,edge_trg, and x
+        return Batch of pytorch geometric
+        """
+        data_list=[]
+        orgs=[]
+        trgs=[]
+        for i,edge_orgs in enumerate(batch.edge_org):
+            for j,edge_org in edge_orgs:
+                org=self.edge_org_vocab.vocab.itos[edge_org]
+                trg=self.edge_trg_vocab.vocab.itos[batch.edge_trg[i][j]]
+                if org.isdigit():
+                    orgs.append(int(org))
+                    trgs.append(int(trg))
+            data_list.append(Data(embed_src[i],torch.tensor([org,trg])))
+
+        return batch = Batch.from_data_list(data_list)
+    def reorder_pes(self,x):
+        pass
     def create_simple_edges(self,num_sentences,len_sentences):
       final_edges=[]
       for i in range(num_sentences):
@@ -143,3 +164,4 @@ class GraphEncoder(Encoder):
     
         final_edges=final_edges+sentence_edges[1:]+[sentence_edges[0]]
       return range(num_sentences*len_sentences),final_edges
+self.edge_org_vocab.numericalize([batch.edge_org,batch.edge_lengths])
