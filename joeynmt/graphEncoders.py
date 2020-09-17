@@ -117,11 +117,10 @@ class GraphEncoder(Encoder):
         data=self.reorder_edges(embed_src,batch)
         x, edge_index, batch = data.x, data.edge_index, data.batch
         x = F.relu(self.ggnn(x, edge_index))
-        pdb.set_trace()
         #x= self.pool1(x, x)
-        output=x.view((batch_size,sent_length,-1))
-        hidden_concat=torch.zeros((batch_size,self.hidden_size))
-        pdb.set_trace()
+        output=x.view((embed_src.shape[0],embed_src.shape[1],-1))
+        #hidden_concat=torch.zeros((batch_size,self.hidden_size))
+        hidden_concat=self.gAtt(x,data.batch)
         return output, hidden_concat
     def reorder_edges(self,embed_src,batch):
         """
@@ -132,7 +131,7 @@ class GraphEncoder(Encoder):
         orgs=[]
         trgs=[]
         for i,edge_orgs in enumerate(batch.edge_org):
-            for j,edge_org in edge_orgs: 
+            for j,edge_org in enumerate(edge_orgs): 
                 org=self.edge_org_vocab.vocab.itos[edge_org]
                 trg=self.edge_trg_vocab.vocab.itos[batch.edge_trg[i][j]]
                 if org.isdigit():
