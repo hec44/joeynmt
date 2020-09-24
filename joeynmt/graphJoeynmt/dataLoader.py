@@ -1,6 +1,7 @@
 from torchtext import data
 from torchtext.data import Dataset, Iterator, Field
 import numpy as np
+from tqdm import tqdm
 
 class GraphTranslationDataset(data.Dataset):
     """Defines a dataset for machine translation with a graph reprsentation on the input and levi graph transformations."""
@@ -25,9 +26,11 @@ class GraphTranslationDataset(data.Dataset):
 
         examples = []
         source_words,origins,targets=self.read_conllu(src_file)
-        pes=self.gen_pes(source_words,origins,targets)
-        
         target_words=self.read_text_file(trg_file)
+        target_words,source_words,origins,targets,pes\
+           =self.gen_pes(target_words,source_words,origins,targets)
+        
+        
         assert len(source_words)==len(target_words),"Mismatch of source and tagret sentences"
         for i in range(len(source_words)):
                 src_line, trg_line = " ".join(source_words[i]),target_words[i]
@@ -154,7 +157,7 @@ class GraphTranslationDataset(data.Dataset):
             visited.pop(0)
             distance_queue.pop(0)
         return distances
-    def gen_pes(self,source_words,orgs,trgs,root_kw="<root>"):
+    def gen_pes(self,target_words,source_words,orgs,trgs,root_kw="<root>"):
         """
         Generates the positional embeddings for all the sentences in the dataset
         argmunets:
@@ -164,6 +167,16 @@ class GraphTranslationDataset(data.Dataset):
             root_kw:the keyword of the root tag in the senteces
         """
         pes=[]
-        for i in range(len(source_words)):
-            pes.append(self.gen_pe(source_words[i],orgs[i],trgs[i],root_kw))
-        return pes
+        banned_is=[]
+        for i in tqdm(range(len(source_words))):
+            if "-1" in " ".join(trgs[i]):
+              banned_is.append(i)
+            else:
+              pes.append(self.gen_pe(source_words[i],orgs[i],trgs[i],root_kw))
+        for i in tqdm(banned_is):
+          del source_words[i]
+          del orgs[i]
+          del trgs[i]
+          del target_words[i]
+
+        return target_words,source_words,orgs,trgs,pes
