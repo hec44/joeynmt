@@ -6,16 +6,16 @@ data: # specify your data here
     src: "conll"                       # src language: expected suffix of train files, e.g. "train.de"
     trg: "de"                       # trg language
     train: "/content/drive/My Drive/encodingRepresentations/en-de-UD/data/train"    # training data
-    dev: "/content/drive/My Drive/encodingRepresentations/en-de-UD/data/dev"        # development data for validation
-    test: "/content/drive/My Drive/encodingRepresentations/en-de-UD/data/dev"      # test data for testing final model; optional
+    dev: "/content/drive/My Drive/encodingRepresentations/challenge_datasets/challenge/newstest2013"        # development data for validation
+    test: "/content/drive/My Drive/encodingRepresentations/challenge_datasets/challenge/newstest2013"      # test data for testing final model; optional
     random_train_subset: -1         # select this many training examples randomly for training and discard the rest, -1: all
     level: "word"                   # segmentation level: either "word", "bpe" or "char"
     lowercase: True                 # lowercase the data, also for validation
-    max_sent_length: 30             # filter out longer sentences from training (src+trg)
+    max_sent_length: 200             # filter out longer sentences from training (src+trg)
     src_voc_min_freq: 1             # src minimum frequency for a token to become part of the vocabulary
-    src_voc_limit: 100001              # src vocabulary only includes this many most frequent tokens, default: unlimited
+    src_voc_limit: 200001              # src vocabulary only includes this many most frequent tokens, default: unlimited
     trg_voc_min_freq: 1             # trg minimum frequency for a token to become part of the vocabulary
-    trg_voc_limit: 100002              # trg vocabulary only includes this many most frequent tokens, default: unlimited
+    trg_voc_limit: 200002              # trg vocabulary only includes this many most frequent tokens, default: unlimited
     #src_vocab: "my_model/src_vocab.txt"  # if specified, load a vocabulary from this file
     #trg_vocab: "my_model/trg_vocab.txt"  # one token per line, line number is index
 
@@ -39,9 +39,9 @@ training:                           # specify training details here
     clip_grad_val: 1.0              # clip the gradients to this value when they exceed it, optional
     #clip_grad_norm: 1.0            # norm clipping instead of value clipping
     weight_decay: 0.                # l2 regularization, default: 0
-    batch_size: 100                  # mini-batch size as number of sentences (when batch_type is "sentence"; default) or total number of tokens (when batch_type is "token")
+    batch_size: 16                  # mini-batch size as number of sentences (when batch_type is "sentence"; default) or total number of tokens (when batch_type is "token")
     batch_type: "sentence"          # create batches with sentences ("sentence", default) or tokens ("token")
-    eval_batch_size: 100             # mini-batch size for evaluation (see batch_size above)
+    eval_batch_size: 16             # mini-batch size for evaluation (see batch_size above)
     eval_batch_type: "sentence"     # evaluation batch type ("sentence", default) or tokens ("token")
     batch_multiplier: 1             # increase the effective batch size with values >1 to batch_multiplier*batch_size without increasing memory consumption by making updates only every batch_multiplier batches
     normalization: "batch"           # loss normalization of a mini-batch, default: "batch" (by number of sequences in batch), other options: "tokens" (by number of tokens in batch), "none" (don't normalize, sum up loss)
@@ -56,8 +56,8 @@ training:                           # specify training details here
     model_dir: "models/small_model" # directory where models and validation results are stored, required
     overwrite: True                 # overwrite existing model directory, default: False. Do not set to True unless for debugging!
     shuffle: True                   # shuffle the training data, default: True
-    use_cuda: False                 # use CUDA for acceleration on GPU, required. Set to False when working on CPU.
-    max_output_length: 31           # maximum output length for decoding, default: None. If set to None, allow sentences of max 1.5*src length
+    use_cuda: True                 # use CUDA for acceleration on GPU, required. Set to False when working on CPU.
+    #max_output_length: 31           # maximum output length for decoding, default: None. If set to None, allow sentences of max 1.5*src length
     print_valid_sents: [0, 1, 2]    # print this many validation sentences during each validation run, default: [0, 1, 2]
     keep_last_ckpts: 3              # keep this many of the latest checkpoints, if -1: all of them, default: 5
     label_smoothing: 0.0            # label smoothing: reference tokens will have 1-label_smoothing probability instead of 1, rest of probability mass is uniformly distributed over the rest of the vocabulary, default: 0.0 (off)
@@ -77,24 +77,24 @@ model:                              # specify your model architecture here
     encoder:
         type: "graph"           # encoder type: "recurrent" for LSTM or GRU, or "transformer" for a Transformer
         embeddings:
-            embedding_dim: 16       # size of embeddings
+            embedding_dim: 256       # size of embeddings
             scale: False            # scale the embeddings by sqrt of their size, default: False
             freeze: False           # if True, embeddings are not updated during training
-        hidden_size: 30             # size of RNN
+        hidden_size: 512             # size of RNN
         dropout: 0.2                # apply dropout to the inputs to the RNN, default: 0.0
-        num_layers: 3               # stack this many layers of equal size, default: 1
+        num_layers: 6               # stack this many layers of equal size, default: 1
         freeze: False               # if True, encoder parameters are not updated during training (does not include embedding parameters)
     decoder:
         type: "recurrent"           # decoder type: "recurrent" for LSTM or GRU, or "transformer" for a Transformer
         rnn_type: "gru"
         embeddings:
-            embedding_dim: 16
+            embedding_dim: 256
             scale: False
             freeze: False           # if True, embeddings are not updated during training
-        hidden_size: 30
+        hidden_size: 512
         dropout: 0.2
         hidden_dropout: 0.2         # apply dropout to the attention vector, default: 0.0
-        num_layers: 2
+        num_layers: 4
         input_feeding: True         # combine hidden state and attention vector before feeding to rnn, default: True
         init_hidden: "last"         # initialized the decoder hidden state: use linear projection of last encoder state ("bridge") or simply the last state ("last") or zeros ("zero"), default: "bridge"
         attention: "bahdanau"       # attention mechanism, choices: "bahdanau" (MLP attention), "luong" (bilinear attention), default: "bahdanau"
