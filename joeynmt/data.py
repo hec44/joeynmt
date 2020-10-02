@@ -15,6 +15,151 @@ from torchtext.data import Dataset, Iterator, Field
 from joeynmt.constants import UNK_TOKEN, EOS_TOKEN, BOS_TOKEN, PAD_TOKEN
 from joeynmt.vocabulary import build_vocab, Vocabulary
 
+#Graph joeynmt
+from joeynmt.graphJoeynmt import dataLoader
+
+def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
+                                  Vocabulary, Vocabulary):
+    """
+    Load train, dev and optionally test data as specified in configuration.
+    Vocabularies are created from the training set with a limit of `voc_limit`
+    tokens and a minimum token frequency of `voc_min_freq`
+    (specified in the configuration dictionary).
+
+    The training data is filtered to include sentences up to `max_sent_length`
+    on source and target side.
+
+    If you set ``random_train_subset``, a random selection of this size is used
+    from the training set instead of the full training set.
+
+    :param data_cfg: configuration dictionary for data
+        ("data" part of configuation file)
+    :return:
+        - train_data: training dataset
+        - dev_data: development dataset
+        - test_data: testdata set if given, otherwise None
+        - src_vocab: source vocabulary extracted from training data
+        - trg_vocab: target vocabulary extracted from training data
+    """
+    # load data from files
+    src_lang = data_cfg["src"]
+    trg_lang = data_cfg["trg"]
+    train_path = data_cfg["train"]
+    dev_path = data_cfg["dev"]
+    test_path = data_cfg.get("test", None)
+    level = data_cfg["level"]
+    lowercase = data_cfg["lowercase"]
+    max_sent_length = data_cfg["max_sent_length"]
+
+    tok_fun = lambda s: list(s) if level == "char" else s.split()
+
+    src_field = data.Field(init_token=None, eos_token=EOS_TOKEN,
+                           pad_token=PAD_TOKEN, tokenize=tok_fun,
+                           batch_first=True, lower=lowercase,
+                           unk_token=UNK_TOKEN,
+                           include_lengths=True)
+
+    trg_field = data.Field(init_token=BOS_TOKEN, eos_token=EOS_TOKEN,
+                           pad_token=PAD_TOKEN, tokenize=tok_fun,
+                           unk_token=UNK_TOKEN,
+                           batch_first=True, lower=lowercase,
+                           include_lengths=True)
+
+    edge_org_field = data.Field(init_token=None, eos_token=None,
+                           pad_token=None ,tokenize=tok_fun,
+                           unk_token=None,
+                           batch_first=True, lower=True,
+                           include_lengths=True)
+    edge_trg_field = data.Field(init_token=None, eos_token=None,
+                           pad_token=None, tokenize=tok_fun,
+                           unk_token=None,
+                           batch_first=True, lower=True,
+                           include_lengths=True)
+    positional_en_field = data.Field(init_token=None, eos_token=None,
+                           pad_token=None, tokenize=tok_fun,
+                           unk_token=None,
+                           batch_first=True, lower=True,
+                           include_lengths=True)
+
+    train_data = dataLoader.GraphTranslationDataset(train_path +'.'+ src_lang,
+                                    train_path +'.'+ trg_lang,
+                                    fields=(src_field, trg_field,edge_org_field,\
+                                    edge_trg_field,positional_en_field),
+                                    filter_pred=
+                                    lambda x: len(vars(x)['src'])
+                                    <= max_sent_length
+                                    and len(vars(x)['trg'])
+                                    <= max_sent_length)
+
+    src_max_size = data_cfg.get("src_voc_limit", sys.maxsize)
+    src_min_freq = data_cfg.get("src_voc_min_freq", 1)
+    trg_max_size = data_cfg.get("trg_voc_limit", sys.maxsize)
+    trg_min_freq = data_cfg.get("trg_voc_min_freq", 1)
+
+    src_vocab_file = data_cfg.get("src_vocab", None)
+    trg_vocab_file = data_cfg.get("trg_vocab", None)
+    graph_vocab_file = data_cfg.get("graph_vocab", None)
+
+    if graph_vocab_file!=None:
+
+        edge_trg_file=graph_vocab_file+".edge_trg"
+        edge_org_file=graph_vocab_file+".edge_org"
+        words_pe_file=graph_vocab_file+".words_pe"
+
+    else:
+
+        edge_trg_file=None
+        edge_org_file=None
+        words_pe_file=None
+
+
+    src_vocab = build_vocab(field="src", min_freq=src_min_freq,
+                            max_size=src_max_size,
+                            dataset=train_data, vocab_file=src_vocab_file)
+    trg_vocab = build_vocab(field="trg", min_freq=trg_min_freq,
+                            max_size=trg_max_size,
+                            dataset=train_data, vocab_file=trg_vocab_file)
+    edge_org_vocab = build_vocab(field="edge_org", min_freq=0,
+                            max_size=999,
+                            dataset=train_data, vocab_file=edge_trg_file)
+    edge_trg_vocab = build_vocab(field="edge_trg", min_freq=0,
+                            max_size=999,
+                            dataset=train_data, vocab_file=edge_org_file)
+    positional_en_vocab = build_vocab(field="positional_en", min_freq=0,
+                            max_size=999,
+                            dataset=train_data, vocab_file=words_pe_file)
+
+    random_train_subset = data_cfg.get("random_train_subset", -1)
+    if random_train_subset > -1:
+        # select this many training examples randomly and discard the rest
+        keep_ratio = random_train_subset / len(train_data)
+        keep, _ = train_data.split(
+            split_ratio=[keep_ratio, 1 - keep_ratio],
+            random_state=random.getstate())
+        train_data = keep
+
+    dev_data = dataLoader.GraphTranslationDataset(dev_path +'.' +src_lang,
+                                    dev_path +'.'+ trg_lang,
+                                    fields=(src_field, trg_field,edge_org_field,\
+                                    edge_trg_field,positional_en_field))
+    test_data = None
+    if test_path is not None:
+        # check if target exists
+        if os.path.isfile(test_path + "." + trg_lang):
+            test_data = dataLoader.GraphTranslationDataset(test_path +'.'+ src_lang,
+                                    test_path +'.'+ trg_lang,
+                                    fields=(src_field, trg_field,edge_org_field,\
+                                    edge_trg_field,positional_en_field))
+        else:
+            # no target is given -> create dataset from src only
+            test_data = MonoDataset(path=test_path, ext="." + src_lang,
+                                    field=src_field)
+    src_field.vocab = src_vocab
+    trg_field.vocab = trg_vocab
+    edge_org_field.vocab = edge_org_vocab
+    edge_trg_field.vocab = edge_trg_vocab
+    positional_en_field.vocab = positional_en_vocab
+    return train_data, dev_data, test_data, src_vocab, trg_vocab,edge_org_field,edge_trg_field,positional_en_field
 
 def load_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                                   Vocabulary, Vocabulary):
@@ -107,12 +252,13 @@ def load_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                 path=test_path, exts=("." + src_lang, "." + trg_lang),
                 fields=(src_field, trg_field))
         else:
-            # no target is given -> create dataset from src only
-            test_data = MonoDataset(path=test_path, ext="." + src_lang,
-                                    field=src_field)
+            #TODO: create MONO dataset for graph encoded input
+            pass
     src_field.vocab = src_vocab
     trg_field.vocab = trg_vocab
     return train_data, dev_data, test_data, src_vocab, trg_vocab
+
+
 
 
 # pylint: disable=global-at-module-level

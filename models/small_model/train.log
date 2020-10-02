@@ -1,0 +1,107 @@
+2020-07-27 16:38:12,635 Hello! This is Joey-NMT.
+2020-07-27 16:38:14,042 Total params: 66376
+2020-07-27 16:38:14,043 Trainable parameters: ['decoder.att_vector_layer.bias', 'decoder.att_vector_layer.weight', 'decoder.attention.energy_layer.weight', 'decoder.attention.key_layer.weight', 'decoder.attention.query_layer.weight', 'decoder.output_layer.weight', 'decoder.rnn.bias_hh_l0', 'decoder.rnn.bias_hh_l1', 'decoder.rnn.bias_ih_l0', 'decoder.rnn.bias_ih_l1', 'decoder.rnn.weight_hh_l0', 'decoder.rnn.weight_hh_l1', 'decoder.rnn.weight_ih_l0', 'decoder.rnn.weight_ih_l1', 'encoder.rnn.bias_hh_l0', 'encoder.rnn.bias_hh_l0_reverse', 'encoder.rnn.bias_hh_l1', 'encoder.rnn.bias_hh_l1_reverse', 'encoder.rnn.bias_hh_l2', 'encoder.rnn.bias_hh_l2_reverse', 'encoder.rnn.bias_ih_l0', 'encoder.rnn.bias_ih_l0_reverse', 'encoder.rnn.bias_ih_l1', 'encoder.rnn.bias_ih_l1_reverse', 'encoder.rnn.bias_ih_l2', 'encoder.rnn.bias_ih_l2_reverse', 'encoder.rnn.weight_hh_l0', 'encoder.rnn.weight_hh_l0_reverse', 'encoder.rnn.weight_hh_l1', 'encoder.rnn.weight_hh_l1_reverse', 'encoder.rnn.weight_hh_l2', 'encoder.rnn.weight_hh_l2_reverse', 'encoder.rnn.weight_ih_l0', 'encoder.rnn.weight_ih_l0_reverse', 'encoder.rnn.weight_ih_l1', 'encoder.rnn.weight_ih_l1_reverse', 'encoder.rnn.weight_ih_l2', 'encoder.rnn.weight_ih_l2_reverse', 'src_embed.lut.weight', 'trg_embed.lut.weight']
+2020-07-27 16:38:14,044 cfg.name                           : my_experiment
+2020-07-27 16:38:14,044 cfg.data.src                       : de
+2020-07-27 16:38:14,044 cfg.data.trg                       : en
+2020-07-27 16:38:14,044 cfg.data.train                     : test/data/toy/train
+2020-07-27 16:38:14,044 cfg.data.dev                       : test/data/toy/dev
+2020-07-27 16:38:14,044 cfg.data.test                      : test/data/toy/test
+2020-07-27 16:38:14,044 cfg.data.random_train_subset       : -1
+2020-07-27 16:38:14,045 cfg.data.level                     : word
+2020-07-27 16:38:14,045 cfg.data.lowercase                 : True
+2020-07-27 16:38:14,045 cfg.data.max_sent_length           : 30
+2020-07-27 16:38:14,045 cfg.data.src_voc_min_freq          : 1
+2020-07-27 16:38:14,045 cfg.data.src_voc_limit             : 101
+2020-07-27 16:38:14,045 cfg.data.trg_voc_min_freq          : 1
+2020-07-27 16:38:14,045 cfg.data.trg_voc_limit             : 102
+2020-07-27 16:38:14,045 cfg.testing.beam_size              : 5
+2020-07-27 16:38:14,046 cfg.testing.alpha                  : 1.0
+2020-07-27 16:38:14,046 cfg.testing.postprocess            : True
+2020-07-27 16:38:14,046 cfg.training.reset_best_ckpt       : False
+2020-07-27 16:38:14,046 cfg.training.reset_scheduler       : False
+2020-07-27 16:38:14,046 cfg.training.reset_optimizer       : False
+2020-07-27 16:38:14,046 cfg.training.random_seed           : 42
+2020-07-27 16:38:14,046 cfg.training.optimizer             : adam
+2020-07-27 16:38:14,047 cfg.training.adam_betas            : [0.9, 0.999]
+2020-07-27 16:38:14,047 cfg.training.learning_rate         : 0.005
+2020-07-27 16:38:14,047 cfg.training.learning_rate_min     : 0.0001
+2020-07-27 16:38:14,047 cfg.training.clip_grad_val         : 1.0
+2020-07-27 16:38:14,047 cfg.training.weight_decay          : 0.0
+2020-07-27 16:38:14,047 cfg.training.batch_size            : 10
+2020-07-27 16:38:14,047 cfg.training.batch_type            : sentence
+2020-07-27 16:38:14,048 cfg.training.eval_batch_size       : 10
+2020-07-27 16:38:14,048 cfg.training.eval_batch_type       : sentence
+2020-07-27 16:38:14,048 cfg.training.batch_multiplier      : 1
+2020-07-27 16:38:14,048 cfg.training.normalization         : batch
+2020-07-27 16:38:14,048 cfg.training.scheduling            : plateau
+2020-07-27 16:38:14,048 cfg.training.patience              : 5
+2020-07-27 16:38:14,048 cfg.training.decrease_factor       : 0.5
+2020-07-27 16:38:14,049 cfg.training.epochs                : 1
+2020-07-27 16:38:14,049 cfg.training.validation_freq       : 10
+2020-07-27 16:38:14,049 cfg.training.logging_freq          : 10
+2020-07-27 16:38:14,049 cfg.training.eval_metric           : bleu
+2020-07-27 16:38:14,049 cfg.training.early_stopping_metric : loss
+2020-07-27 16:38:14,049 cfg.training.model_dir             : models/small_model
+2020-07-27 16:38:14,049 cfg.training.overwrite             : True
+2020-07-27 16:38:14,049 cfg.training.shuffle               : True
+2020-07-27 16:38:14,050 cfg.training.use_cuda              : False
+2020-07-27 16:38:14,050 cfg.training.max_output_length     : 31
+2020-07-27 16:38:14,050 cfg.training.print_valid_sents     : [0, 1, 2]
+2020-07-27 16:38:14,050 cfg.training.keep_last_ckpts       : 3
+2020-07-27 16:38:14,050 cfg.training.label_smoothing       : 0.0
+2020-07-27 16:38:14,051 cfg.model.initializer              : xavier
+2020-07-27 16:38:14,051 cfg.model.init_weight              : 0.01
+2020-07-27 16:38:14,051 cfg.model.init_gain                : 1.0
+2020-07-27 16:38:14,051 cfg.model.bias_initializer         : zeros
+2020-07-27 16:38:14,051 cfg.model.embed_initializer        : normal
+2020-07-27 16:38:14,051 cfg.model.embed_init_weight        : 0.1
+2020-07-27 16:38:14,051 cfg.model.embed_init_gain          : 1.0
+2020-07-27 16:38:14,051 cfg.model.init_rnn_orthogonal      : False
+2020-07-27 16:38:14,052 cfg.model.lstm_forget_gate         : 1.0
+2020-07-27 16:38:14,052 cfg.model.tied_embeddings          : False
+2020-07-27 16:38:14,052 cfg.model.tied_softmax             : False
+2020-07-27 16:38:14,052 cfg.model.encoder.type             : graph
+2020-07-27 16:38:14,052 cfg.model.encoder.rnn_type         : gru
+2020-07-27 16:38:14,053 cfg.model.encoder.embeddings.embedding_dim : 16
+2020-07-27 16:38:14,053 cfg.model.encoder.embeddings.scale : False
+2020-07-27 16:38:14,056 cfg.model.encoder.embeddings.freeze : False
+2020-07-27 16:38:14,057 cfg.model.encoder.hidden_size      : 30
+2020-07-27 16:38:14,057 cfg.model.encoder.bidirectional    : True
+2020-07-27 16:38:14,057 cfg.model.encoder.dropout          : 0.2
+2020-07-27 16:38:14,057 cfg.model.encoder.num_layers       : 3
+2020-07-27 16:38:14,057 cfg.model.encoder.freeze           : False
+2020-07-27 16:38:14,057 cfg.model.decoder.type             : recurrent
+2020-07-27 16:38:14,058 cfg.model.decoder.rnn_type         : gru
+2020-07-27 16:38:14,058 cfg.model.decoder.embeddings.embedding_dim : 16
+2020-07-27 16:38:14,058 cfg.model.decoder.embeddings.scale : False
+2020-07-27 16:38:14,058 cfg.model.decoder.embeddings.freeze : False
+2020-07-27 16:38:14,058 cfg.model.decoder.hidden_size      : 30
+2020-07-27 16:38:14,058 cfg.model.decoder.dropout          : 0.2
+2020-07-27 16:38:14,058 cfg.model.decoder.hidden_dropout   : 0.2
+2020-07-27 16:38:14,059 cfg.model.decoder.num_layers       : 2
+2020-07-27 16:38:14,059 cfg.model.decoder.input_feeding    : True
+2020-07-27 16:38:14,059 cfg.model.decoder.init_hidden      : last
+2020-07-27 16:38:14,059 cfg.model.decoder.attention        : bahdanau
+2020-07-27 16:38:14,059 cfg.model.decoder.freeze           : False
+2020-07-27 16:38:14,059 Data set sizes: 
+	train 922,
+	valid 20,
+	test 20
+2020-07-27 16:38:14,059 First training example:
+	[SRC] david gallo: das ist bill lange. ich bin dave gallo.
+	[TRG] david gallo: this is bill lange. i'm dave gallo.
+2020-07-27 16:38:14,060 First 10 words (src): (0) <unk> (1) <pad> (2) <s> (3) </s> (4) und (5) die (6) wir (7) der (8) sie (9) das
+2020-07-27 16:38:14,060 First 10 words (trg): (0) <unk> (1) <pad> (2) <s> (3) </s> (4) the (5) and (6) of (7) to (8) a (9) in
+2020-07-27 16:38:14,060 Number of Src words (types): 105
+2020-07-27 16:38:14,060 Number of Trg words (types): 106
+2020-07-27 16:38:14,061 Model(
+	encoder=GraphEncoder(
+  (emb_dropout): Dropout(p=0.2, inplace=False)
+  (rnn): GRU(16, 30, num_layers=3, batch_first=True, dropout=0.2, bidirectional=True)
+),
+	decoder=RecurrentDecoder(rnn=GRU(46, 30, num_layers=2, batch_first=True, dropout=0.2), attention=BahdanauAttention),
+	src_embed=Embeddings(embedding_dim=16, vocab_size=105),
+	trg_embed=Embeddings(embedding_dim=16, vocab_size=106))
+2020-07-27 16:38:14,061 EPOCH 1
+2020-07-27 16:43:55,409 Epoch   1 Step:       10 Batch Loss:    19.871571 Tokens per Sec:        3, Lr: 0.005000

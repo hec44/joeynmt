@@ -28,10 +28,12 @@ from joeynmt.helpers import log_data_info, load_config, log_cfg, \
 from joeynmt.model import Model
 from joeynmt.prediction import validate_on_data
 from joeynmt.loss import XentLoss
-from joeynmt.data import load_data, make_data_iter
+from joeynmt.data import load_data, make_data_iter, load_graph_data
 from joeynmt.builders import build_optimizer, build_scheduler, \
     build_gradient_clipper
 from joeynmt.prediction import test
+
+
 
 
 # pylint: disable=too-many-instance-attributes
@@ -361,7 +363,6 @@ class TrainManager:
                 # validate on the entire dev set
                 if self.steps % self.validation_freq == 0 and update:
                     valid_start_time = time.time()
-
                     valid_score, valid_loss, valid_ppl, valid_sources, \
                         valid_sources_raw, valid_references, valid_hypotheses, \
                         valid_hypotheses_raw, valid_attention_scores = \
@@ -623,11 +624,21 @@ def train(cfg_file: str) -> None:
     set_seed(seed=cfg["training"].get("random_seed", 42))
 
     # load the data
-    train_data, dev_data, test_data, src_vocab, trg_vocab = load_data(
-        data_cfg=cfg["data"])
+    if cfg["model"]["encoder"].get("type", "recurrent") == "graph":
+        train_data, dev_data, test_data, src_vocab, trg_vocab,\
+        edge_org_vocab,edge_trg_vocab,positional_en_vocab = load_graph_data(
+            data_cfg=cfg["data"])
+    else:
+        train_data, dev_data, test_data, src_vocab, trg_vocab = load_data(
+            data_cfg=cfg["data"])
 
     # build an encoder-decoder model
-    model = build_model(cfg["model"], src_vocab=src_vocab, trg_vocab=trg_vocab)
+    if cfg["model"]["encoder"].get("type", "recurrent") == "graph":
+        model = build_model(cfg["model"], src_vocab=src_vocab, trg_vocab=trg_vocab,\
+                            edge_org_vocab=edge_org_vocab,edge_trg_vocab=edge_trg_vocab,\
+                            positional_en_vocab=positional_en_vocab)
+    else:
+        model = build_model(cfg["model"], src_vocab=src_vocab, trg_vocab=trg_vocab)
 
     # for training management, e.g. early stopping and model selection
     trainer = TrainManager(model=model, config=cfg)
@@ -649,6 +660,7 @@ def train(cfg_file: str) -> None:
     src_vocab.to_file(src_vocab_file)
     trg_vocab_file = "{}/trg_vocab.txt".format(cfg["training"]["model_dir"])
     trg_vocab.to_file(trg_vocab_file)
+    #TODO: store edge and PE vocabs
 
     # train the model
     trainer.train_and_validate(train_data=train_data, valid_data=dev_data)

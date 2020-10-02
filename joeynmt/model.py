@@ -11,6 +11,7 @@ import torch.nn.functional as F
 
 from joeynmt.initialization import initialize_model
 from joeynmt.embeddings import Embeddings
+from joeynmt.graphEncoders import GraphEncoder
 from joeynmt.encoders import Encoder, RecurrentEncoder, TransformerEncoder
 from joeynmt.decoders import Decoder, RecurrentDecoder, TransformerDecoder
 from joeynmt.constants import PAD_TOKEN, EOS_TOKEN, BOS_TOKEN
@@ -56,7 +57,7 @@ class Model(nn.Module):
 
     # pylint: disable=arguments-differ
     def forward(self, src: Tensor, trg_input: Tensor, src_mask: Tensor,
-                src_lengths: Tensor, trg_mask: Tensor = None) -> (
+                src_lengths: Tensor, trg_mask: Tensor = None,batch: Batch = None) -> (
         Tensor, Tensor, Tensor, Tensor):
         """
         First encodes the source sentence.
@@ -71,7 +72,7 @@ class Model(nn.Module):
         """
         encoder_output, encoder_hidden = self.encode(src=src,
                                                      src_length=src_lengths,
-                                                     src_mask=src_mask)
+                                                     src_mask=src_mask,batch=batch)
         unroll_steps = trg_input.size(1)
         return self.decode(encoder_output=encoder_output,
                            encoder_hidden=encoder_hidden,
@@ -79,7 +80,7 @@ class Model(nn.Module):
                            unroll_steps=unroll_steps,
                            trg_mask=trg_mask)
 
-    def encode(self, src: Tensor, src_length: Tensor, src_mask: Tensor) \
+    def encode(self, src: Tensor, src_length: Tensor, src_mask: Tensor,batch: Batch = None) \
         -> (Tensor, Tensor):
         """
         Encodes the source sentence.
@@ -89,7 +90,7 @@ class Model(nn.Module):
         :param src_mask:
         :return: encoder outputs (output, hidden_concat)
         """
-        return self.encoder(self.src_embed(src), src_length, src_mask)
+        return self.encoder(self.src_embed(src), src_length, src_mask,batch)
 
     def decode(self, encoder_output: Tensor, encoder_hidden: Tensor,
                src_mask: Tensor, trg_input: Tensor,
@@ -119,6 +120,7 @@ class Model(nn.Module):
     def get_loss_for_batch(self, batch: Batch, loss_function: nn.Module) \
             -> Tensor:
         """
+        TODO:extend to take as input graph batch
         Compute non-normalized loss and number of tokens for a batch
 
         :param batch: batch to compute loss for
@@ -127,10 +129,17 @@ class Model(nn.Module):
         :return: batch_loss: sum of losses over non-pad elements in the batch
         """
         # pylint: disable=unused-variable
-        out, hidden, att_probs, _ = self.forward(
-            src=batch.src, trg_input=batch.trg_input,
-            src_mask=batch.src_mask, src_lengths=batch.src_lengths,
-            trg_mask=batch.trg_mask)
+        if hasattr(batch,'edge_org'):
+            out, hidden, att_probs, _ = self.forward(
+                src=batch.src, trg_input=batch.trg_input,
+                src_mask=batch.src_mask, src_lengths=batch.src_lengths,
+                trg_mask=batch.trg_mask,batch=batch) 
+         
+        else:
+            out, hidden, att_probs, _ = self.forward(
+                src=batch.src, trg_input=batch.trg_input,
+                src_mask=batch.src_mask, src_lengths=batch.src_lengths,
+                trg_mask=batch.trg_mask)
 
         # compute log probs
         log_probs = F.log_softmax(out, dim=-1)
@@ -154,7 +163,7 @@ class Model(nn.Module):
         """
         encoder_output, encoder_hidden = self.encode(
             batch.src, batch.src_lengths,
-            batch.src_mask)
+            batch.src_mask,batch=batch)
 
         # if maximum output length is not globally specified, adapt to src len
         if max_output_length is None:
@@ -199,7 +208,11 @@ class Model(nn.Module):
 
 def build_model(cfg: dict = None,
                 src_vocab: Vocabulary = None,
-                trg_vocab: Vocabulary = None) -> Model:
+                trg_vocab: Vocabulary = None,
+                edge_org_vocab: Vocabulary = None,
+                edge_trg_vocab: Vocabulary = None,
+                positional_en_vocab: Vocabulary = None
+                ) -> Model:
     """
     Build and initialize the model according to the configuration.
 
@@ -207,6 +220,8 @@ def build_model(cfg: dict = None,
     :param src_vocab: source vocabulary
     :param trg_vocab: target vocabulary
     :return: built and initialized model
+
+    TODO: add input of edge & pe vocabs
     """
     src_padding_idx = src_vocab.stoi[PAD_TOKEN]
     trg_padding_idx = trg_vocab.stoi[PAD_TOKEN]
@@ -240,7 +255,14 @@ def build_model(cfg: dict = None,
         encoder = TransformerEncoder(**cfg["encoder"],
                                      emb_size=src_embed.embedding_dim,
                                      emb_dropout=enc_emb_dropout)
-    else:
+    elif cfg["encoder"].get("type", "recurrent") == "graph":
+        encoder = GraphEncoder(**cfg["encoder"],
+                                     emb_size=src_embed.embedding_dim,
+                                     emb_dropout=enc_emb_dropout,
+                                     edge_org_vocab = edge_org_vocab,
+                                     edge_trg_vocab = edge_trg_vocab,
+                                     positional_en_vocab = positional_en_vocab)
+    elif cfg["encoder"].get("type", "recurrent") == "recurrent":
         encoder = RecurrentEncoder(**cfg["encoder"],
                                    emb_size=src_embed.embedding_dim,
                                    emb_dropout=enc_emb_dropout)
