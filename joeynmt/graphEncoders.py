@@ -91,7 +91,6 @@ class GraphEncoder(Encoder):
                 batch: Batch) \
             -> (Tensor, Tensor):
         """
-        TODO: add vocabularies for edges and PES
         Applies a bidirectional RNN to sequence of embeddings x.
         The input mini-batch x needs to be sorted by src length.
         x and mask should have the same dimensions [batch, time, dim].
@@ -115,12 +114,17 @@ class GraphEncoder(Encoder):
         # apply dropout to the emmbeding input
         embed_src = self.emb_dropout(embed_src)
         data=self.reorder_edges(embed_src,batch)
-        x, edge_index, batch = data.x, data.edge_index, data.batch
+        #pdb.set_trace()
+        x, edge_index, batch = data.x.cuda(), data.edge_index.cuda(), data.batch.cuda()
+        #pdb.set_trace()
         x = F.relu(self.ggnn(x, edge_index))
         #x= self.pool1(x, x)
+        #pdb.set_trace()
+        hidden_concat=self.gAtt(x,data.batch.cuda())
         output=x.view((embed_src.shape[0],embed_src.shape[1],-1))
         #hidden_concat=torch.zeros((batch_size,self.hidden_size))
-        hidden_concat=self.gAtt(x,data.batch)
+        pdb.set_trace()
+        #hidden_concat=self.gAtt(x,data.batch)
         return output, hidden_concat
     def reorder_edges(self,embed_src,batch):
         """

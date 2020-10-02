@@ -2,7 +2,7 @@ from torchtext import data
 from torchtext.data import Dataset, Iterator, Field
 import numpy as np
 from tqdm import tqdm
-
+import pdb
 class GraphTranslationDataset(data.Dataset):
     """Defines a dataset for machine translation with a graph reprsentation on the input and levi graph transformations."""
 
@@ -30,7 +30,8 @@ class GraphTranslationDataset(data.Dataset):
         target_words,source_words,origins,targets,pes\
            =self.gen_pes(target_words,source_words,origins,targets)
         
-        
+        if len(source_words) != len(target_words):
+          target_words=target_words[:-1]
         assert len(source_words)==len(target_words),"Mismatch of source and tagret sentences"
         for i in range(len(source_words)):
                 src_line, trg_line = " ".join(source_words[i]),target_words[i]
