@@ -65,13 +65,13 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                            batch_first=True, lower=lowercase,
                            include_lengths=True)
 
-    edge_org_field = data.Field(use_vocab = False
+    edge_org_field = data.Field(use_vocab = False,
                            batch_first=True,
                            include_lengths=True)
-    edge_trg_field = data.Field(use_vocab = False
+    edge_trg_field = data.Field(use_vocab = False,
                            batch_first=True,
                            include_lengths=True)
-    positional_en_field = data.Field(use_vocab = False
+    positional_en_field = data.Field(use_vocab = False,
                            batch_first=True,
                            include_lengths=True)
 
