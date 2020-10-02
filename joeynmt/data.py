@@ -65,20 +65,14 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                            batch_first=True, lower=lowercase,
                            include_lengths=True)
 
-    edge_org_field = data.Field(init_token=None, eos_token=None,
-                           pad_token=None ,tokenize=tok_fun,
-                           unk_token=None,
-                           batch_first=True, lower=True,
+    edge_org_field = data.Field(use_vocab = False
+                           batch_first=True,
                            include_lengths=True)
-    edge_trg_field = data.Field(init_token=None, eos_token=None,
-                           pad_token=None, tokenize=tok_fun,
-                           unk_token=None,
-                           batch_first=True, lower=True,
+    edge_trg_field = data.Field(use_vocab = False
+                           batch_first=True,
                            include_lengths=True)
-    positional_en_field = data.Field(init_token=None, eos_token=None,
-                           pad_token=None, tokenize=tok_fun,
-                           unk_token=None,
-                           batch_first=True, lower=True,
+    positional_en_field = data.Field(use_vocab = False
+                           batch_first=True,
                            include_lengths=True)
 
     train_data = dataLoader.GraphTranslationDataset(train_path +'.'+ src_lang,
@@ -98,19 +92,7 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
 
     src_vocab_file = data_cfg.get("src_vocab", None)
     trg_vocab_file = data_cfg.get("trg_vocab", None)
-    graph_vocab_file = data_cfg.get("graph_vocab", None)
 
-    if graph_vocab_file!=None:
-
-        edge_trg_file=graph_vocab_file+".edge_trg"
-        edge_org_file=graph_vocab_file+".edge_org"
-        words_pe_file=graph_vocab_file+".words_pe"
-
-    else:
-
-        edge_trg_file=None
-        edge_org_file=None
-        words_pe_file=None
 
 
     src_vocab = build_vocab(field="src", min_freq=src_min_freq,
@@ -119,15 +101,6 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
     trg_vocab = build_vocab(field="trg", min_freq=trg_min_freq,
                             max_size=trg_max_size,
                             dataset=train_data, vocab_file=trg_vocab_file)
-    edge_org_vocab = build_vocab(field="edge_org", min_freq=0,
-                            max_size=999,
-                            dataset=train_data, vocab_file=edge_trg_file)
-    edge_trg_vocab = build_vocab(field="edge_trg", min_freq=0,
-                            max_size=999,
-                            dataset=train_data, vocab_file=edge_org_file)
-    positional_en_vocab = build_vocab(field="positional_en", min_freq=0,
-                            max_size=999,
-                            dataset=train_data, vocab_file=words_pe_file)
 
     random_train_subset = data_cfg.get("random_train_subset", -1)
     if random_train_subset > -1:
@@ -156,9 +129,8 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                                     field=src_field)
     src_field.vocab = src_vocab
     trg_field.vocab = trg_vocab
-    edge_org_field.vocab = edge_org_vocab
-    edge_trg_field.vocab = edge_trg_vocab
-    positional_en_field.vocab = positional_en_vocab
+    pdb.set_trace()
+
     return train_data, dev_data, test_data, src_vocab, trg_vocab,edge_org_field,edge_trg_field,positional_en_field
 
 def load_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
