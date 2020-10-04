@@ -138,6 +138,7 @@ class GraphEncoder(Encoder):
             for j,edge_org in enumerate(edge_orgs): 
                 org=edge_org
                 trg=batch.edge_trg[i][j]
+                pdb.set_trace()
                 if org!=0 and trg[i][j]!=0:
                     orgs.append(int(org))
                     trgs.append(int(trg))
