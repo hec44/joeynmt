@@ -5,9 +5,9 @@ name: "my_experiment"
 data: # specify your data here
     src: "conll"                       # src language: expected suffix of train files, e.g. "train.de"
     trg: "de"                       # trg language
-    train: "/content/drive/My Drive/encodingRepresentations/en-de-UD/data/train"    # training data
-    dev: "/content/drive/My Drive/encodingRepresentations/challenge_datasets/challenge/newstest2013"        # development data for validation
-    test: "/content/drive/My Drive/encodingRepresentations/challenge_datasets/challenge/newstest2013"      # test data for testing final model; optional
+    train: "/content/joeynmt/test/data/toy/dev"    # training data
+    dev: "/content/joeynmt/test/data/toy/dev"        # development data for validation
+    test: "/content/joeynmt/test/data/toy/dev"      # test data for testing final model; optional
     random_train_subset: -1         # select this many training examples randomly for training and discard the rest, -1: all
     level: "word"                   # segmentation level: either "word", "bpe" or "char"
     lowercase: True                 # lowercase the data, also for validation
@@ -98,4 +98,4 @@ model:                              # specify your model architecture here
         input_feeding: True         # combine hidden state and attention vector before feeding to rnn, default: True
         init_hidden: "last"         # initialized the decoder hidden state: use linear projection of last encoder state ("bridge") or simply the last state ("last") or zeros ("zero"), default: "bridge"
         attention: "bahdanau"       # attention mechanism, choices: "bahdanau" (MLP attention), "luong" (bilinear attention), default: "bahdanau"
-        freeze: False  
+        freeze: False 

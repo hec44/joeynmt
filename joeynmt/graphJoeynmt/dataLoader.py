@@ -32,6 +32,7 @@ class GraphTranslationDataset(data.Dataset):
         
         if len(source_words) != len(target_words):
           target_words=target_words[:-1]
+        pdb.set_trace()
         assert len(source_words)==len(target_words),"Mismatch of source and tagret sentences"
         for i in range(len(source_words)):
                 src_line, trg_line = " ".join(source_words[i]),target_words[i]
@@ -39,8 +40,8 @@ class GraphTranslationDataset(data.Dataset):
                 
                 if src_line != '' and trg_line != '':
                     examples.append(data.Example.fromlist(
-                        [src_line, trg_line," ".join(origins[i])," ".join(targets[i]),\
-                        " ".join(pes[i])],\
+                        [src_line, trg_line,origins[i],targets[i],\
+                        pes[i]],\
                         fields))
         super(GraphTranslationDataset, self).__init__(examples, fields, **kwargs)
 
@@ -116,8 +117,8 @@ class GraphTranslationDataset(data.Dataset):
             root_pos=np.argmin(edge_targets)
             edge_targets = np.delete(edge_targets, [root_pos])
             edge_origins = np.delete(edges_positions,[root_pos])
-            origins[i] = [str(num) for num in list(np.concatenate((new_origins,edge_origins)))]
-            targets[i] = [str(num) for num in list(np.concatenate((new_targets,edge_targets)))]
+            origins[i] = [int(num) for num in list(np.concatenate((new_origins,edge_origins)))]
+            targets[i] = [int(num) for num in list(np.concatenate((new_targets,edge_targets)))]
             assert len(targets[i])==len(origins[i])
             words[i]=words[i]+edges[i]
             
@@ -148,11 +149,11 @@ class GraphTranslationDataset(data.Dataset):
         assert start!=None,"sentence does not have a <root> tag"
         visited=[start]
         distance_queue=[1]
-        distances=['0']*len(words)
+        distances=[0]*len(words)
         while len(visited)!=0:
             for index,node in enumerate(trg):
                 if str(node)==str(visited[0]):
-                    distances[int(org[index])]=str(distance_queue[0])
+                    distances[int(org[index])]=int(distance_queue[0])
                     visited.append(org[index])
                     distance_queue.append(distance_queue[0]+1)
             visited.pop(0)
@@ -170,7 +171,7 @@ class GraphTranslationDataset(data.Dataset):
         pes=[]
         banned_is=[]
         for i in tqdm(range(len(source_words))):
-            if "-1" in " ".join(trgs[i]):
+            if -1 in trgs[i]:
               banned_is.append(i)
             else:
               pes.append(self.gen_pe(source_words[i],orgs[i],trgs[i],root_kw))

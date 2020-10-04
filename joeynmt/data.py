@@ -7,6 +7,7 @@ import random
 import os
 import os.path
 from typing import Optional
+import pdb
 
 from torchtext.datasets import TranslationDataset
 from torchtext import data
@@ -17,7 +18,6 @@ from joeynmt.vocabulary import build_vocab, Vocabulary
 
 #Graph joeynmt
 from joeynmt.graphJoeynmt import dataLoader
-import pbd
 
 def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                                   Vocabulary, Vocabulary):
@@ -68,13 +68,13 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
 
     edge_org_field = data.Field(use_vocab = False,
                            batch_first=True,
-                           include_lengths=True)
+                           include_lengths=True,pad_token=0)
     edge_trg_field = data.Field(use_vocab = False,
                            batch_first=True,
-                           include_lengths=True)
+                           include_lengths=True,pad_token=0)
     positional_en_field = data.Field(use_vocab = False,
                            batch_first=True,
-                           include_lengths=True)
+                           include_lengths=True,pad_token=0)
 
     train_data = dataLoader.GraphTranslationDataset(train_path +'.'+ src_lang,
                                     train_path +'.'+ trg_lang,
@@ -130,7 +130,6 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                                     field=src_field)
     src_field.vocab = src_vocab
     trg_field.vocab = trg_vocab
-    pdb.set_trace()
 
     return train_data, dev_data, test_data, src_vocab, trg_vocab,edge_org_field,edge_trg_field,positional_en_field
 

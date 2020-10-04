@@ -32,7 +32,7 @@ from joeynmt.data import load_data, make_data_iter, load_graph_data
 from joeynmt.builders import build_optimizer, build_scheduler, \
     build_gradient_clipper
 from joeynmt.prediction import test
-
+import pdb
 
 
 
@@ -303,6 +303,7 @@ class TrainManager:
             self.optimizer.zero_grad()
             count = self.current_batch_multiplier - 1
             epoch_loss = 0
+            pdb.set_trace()
 
             for i, batch in enumerate(iter(train_iter)):
                 # reactivate training
