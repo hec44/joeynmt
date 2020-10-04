@@ -138,10 +138,10 @@ class GraphEncoder(Encoder):
             for j,edge_org in enumerate(edge_orgs): 
                 org=self.edge_org_vocab.vocab.itos[edge_org]
                 trg=self.edge_trg_vocab.vocab.itos[batch.edge_trg[i][j]]
-                if org.isdigit():
+                if org!=0 and trg[i][j]!=0:
                     orgs.append(int(org))
                     trgs.append(int(trg))
-            data_list.append(Data(embed_src[i],torch.tensor([orgs,trgs])))
+            data_list.append(Data(embed_src[i],torch.tensor([orgs,trgs],dtype=torch.long)))
 
         return Batch.from_data_list(data_list)
     def reorder_pes(self,x):
