@@ -136,8 +136,8 @@ class GraphEncoder(Encoder):
         trgs=[]
         for i,edge_orgs in enumerate(batch.edge_org):
             for j,edge_org in enumerate(edge_orgs): 
-                org=self.edge_org_vocab.vocab.itos[edge_org]
-                trg=self.edge_trg_vocab.vocab.itos[batch.edge_trg[i][j]]
+                org=edge_org
+                trg=batch.edge_trg[i][j]
                 if org!=0 and trg[i][j]!=0:
                     orgs.append(int(org))
                     trgs.append(int(trg))
