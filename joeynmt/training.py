@@ -626,7 +626,7 @@ def train(cfg_file: str) -> None:
 
     # load the data
     if cfg["model"]["encoder"].get("type", "recurrent") == "graph":
-        train_data, dev_data, test_data, src_vocab, trg_vocab,edge_vocab\
+        train_data, dev_data, test_data, src_vocab, trg_vocab,edge_vocab,\
         edge_org_vocab,edge_trg_vocab,positional_en_vocab = load_graph_data(
             data_cfg=cfg["data"])
     else:
