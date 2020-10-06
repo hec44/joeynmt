@@ -183,3 +183,4 @@
 30	early	early	ADJ	JJ	Degree=Pos	31	amod	_	start_char=914|end_char=919
 31	1980’s	1980	NOUN	NNS	Number=Plur	24	obl	_	start_char=920|end_char=926
 32	.	.	PUNCT	.	_	6	punct	_	start_char=926|end_char=927
+

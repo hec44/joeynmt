@@ -131,7 +131,8 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
 
     dev_data = dataLoader.GraphTranslationDataset(dev_path +'.' +src_lang,
                                     dev_path +'.'+ trg_lang,
-                                    fields=(src_field, trg_field,edge_org_field,\
+                                    dev_path + '.'+ annotation,
+                                    fields=(src_field, trg_field,edge_field,edge_org_field,\
                                     edge_trg_field,positional_en_field))
     test_data = None
     if test_path is not None:

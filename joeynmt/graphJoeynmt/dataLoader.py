@@ -26,22 +26,22 @@ class GraphTranslationDataset(data.Dataset):
 
         examples = []
         edges,origins,targets=self.read_conllu(edge_file)
+        
         source_words=self.read_text_file(src_file)
         target_words=self.read_text_file(trg_file)
         target_words,source_words,origins,targets,pes\
-           =self.gen_pes(target_words,source_words,origins,targets)
+           =self.gen_pes(target_words,source_words,edges,origins,targets)
         
         if len(source_words) != len(target_words):
           target_words=target_words[:-1]
-        pdb.set_trace()
         assert len(source_words)==len(target_words),"Mismatch of source and tagret sentences"
         for i in range(len(source_words)):
-                src_line, trg_line = " ".join(source_words[i]),target_words[i]
+                src_line, trg_line = source_words[i],target_words[i]
                 src_line, trg_line = src_line.strip(), trg_line.strip()
                 
                 if src_line != '' and trg_line != '':
                     examples.append(data.Example.fromlist(
-                        [src_line, trg_line,origins[i],targets[i],\
+                        [src_line, trg_line,edges[i],origins[i],targets[i],\
                         pes[i]],\
                         fields))
         super(GraphTranslationDataset, self).__init__(examples, fields, **kwargs)
@@ -104,6 +104,16 @@ class GraphTranslationDataset(data.Dataset):
                 temp_origins.append(int(splits[0]))
                 temp_targets.append(int(splits[6]))
                 temp_edges.append("<"+splits[7]+">")
+        if len(temp_edges)>0:
+          origins.append(np.array(temp_origins))
+          targets.append(np.array(temp_targets))
+          edges.append(temp_edges)
+        
+          temp_origins=[]
+          temp_targets=[]
+          temp_edges=[]
+    
+
         for i in range(len(edges)):
             new_origins=origins[i]-1
             edges_positions=np.arange(len(edges[i]),2*len(edges[i]))
@@ -128,7 +138,7 @@ class GraphTranslationDataset(data.Dataset):
         lines=f.readlines()
         f.close()
         return lines
-    def gen_pe(self,words,org,trg,root_kw="<root>"):
+    def gen_pe(self,words,edges,org,trg,root_kw="<root>"):
         """Calculates the min distance to the root to each node using BFS
         Argmunets:
             words: all the words of the sentence
@@ -137,14 +147,15 @@ class GraphTranslationDataset(data.Dataset):
             root_kw: the keyword of the roo tag in the sentence
         """
         start=None
-        for ind,word in enumerate(words):
-            if word==root_kw:
+        for ind,edges in enumerate(edges):
+            if edges==root_kw:
                 start=ind
                 continue
         assert start!=None,"sentence does not have a <root> tag"
         visited=[start]
         distance_queue=[1]
-        distances=[0]*len(words)
+        distances=[0]*len(edges)
+        return distances
         while len(visited)!=0:
             for index,node in enumerate(trg):
                 if str(node)==str(visited[0]):
@@ -154,7 +165,7 @@ class GraphTranslationDataset(data.Dataset):
             visited.pop(0)
             distance_queue.pop(0)
         return distances
-    def gen_pes(self,target_words,source_words,orgs,trgs,root_kw="<root>"):
+    def gen_pes(self,target_words,source_words,edges,orgs,trgs,root_kw="<root>"):
         """
         Generates the positional embeddings for all the sentences in the dataset
         argmunets:
@@ -165,11 +176,11 @@ class GraphTranslationDataset(data.Dataset):
         """
         pes=[]
         banned_is=[]
-        for i in tqdm(range(len(source_words))):
+        for i in tqdm(range(len(edges))):
             if -1 in trgs[i]:
               banned_is.append(i)
             else:
-              pes.append(self.gen_pe(source_words[i],orgs[i],trgs[i],root_kw))
+              pes.append(self.gen_pe(source_words[i],edges[i],orgs[i],trgs[i],root_kw))
         for i in tqdm(banned_is):
           del source_words[i]
           del orgs[i]
