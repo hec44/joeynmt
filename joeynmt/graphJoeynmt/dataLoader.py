@@ -25,7 +25,7 @@ class GraphTranslationDataset(data.Dataset):
                      ('edge_org', fields[3]), ('edge_trg', fields[4]), ('positional_en',fields[5])]
 
         examples = []
-        edges,origins,targets=self.read_conllu(src_file)
+        edges,origins,targets=self.read_conllu(edge_file)
         source_words=self.read_text_file(src_file)
         target_words=self.read_text_file(trg_file)
         target_words,source_words,origins,targets,pes\
