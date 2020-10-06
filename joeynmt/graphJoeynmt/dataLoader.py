@@ -117,7 +117,7 @@ class GraphTranslationDataset(data.Dataset):
             targets[i] = [int(num) for num in list(np.concatenate((new_targets,edge_targets)))]
             assert len(targets[i])==len(origins[i])
             
-        return words,origins,targets
+        return edges,origins,targets
     
     def read_text_file(self,path):
         """Read a text file 
