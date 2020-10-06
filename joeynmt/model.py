@@ -209,9 +209,7 @@ class Model(nn.Module):
 def build_model(cfg: dict = None,
                 src_vocab: Vocabulary = None,
                 trg_vocab: Vocabulary = None,
-                edge_org_vocab: Vocabulary = None,
-                edge_trg_vocab: Vocabulary = None,
-                positional_en_vocab: Vocabulary = None
+                edge_vocab: Vocabulary = None
                 ) -> Model:
     """
     Build and initialize the model according to the configuration.
@@ -259,9 +257,7 @@ def build_model(cfg: dict = None,
         encoder = GraphEncoder(**cfg["encoder"],
                                      emb_size=src_embed.embedding_dim,
                                      emb_dropout=enc_emb_dropout,
-                                     edge_org_vocab = edge_org_vocab,
-                                     edge_trg_vocab = edge_trg_vocab,
-                                     positional_en_vocab = positional_en_vocab)
+                                     edge_vocab = edge_vocab)
     elif cfg["encoder"].get("type", "recurrent") == "recurrent":
         encoder = RecurrentEncoder(**cfg["encoder"],
                                    emb_size=src_embed.embedding_dim,

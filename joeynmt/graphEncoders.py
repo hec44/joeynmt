@@ -7,6 +7,8 @@ from torch import Tensor
 from torch_geometric.nn import GlobalAttention,GatedGraphConv,TopKPooling
 from torch_geometric.data import Data,Batch
 from torch.nn import Sequential as Seq, Linear as Lin, ReLU
+from joeynmt.embeddings import Embeddings
+from joeynmt.constants import PAD_TOKEN, EOS_TOKEN, BOS_TOKEN
 
 from joeynmt.helpers import freeze_params
 from joeynmt.transformer_layers import TransformerEncoderLayer,PositionalEncoding
@@ -30,9 +32,7 @@ class GraphEncoder(Encoder):
                  dropout: float = 0.,
                  emb_dropout: float = 0.,
                  freeze: bool = False,
-                 edge_org_vocab: Vocabulary = None,
-                 edge_trg_vocab: Vocabulary = None,
-                 positional_en_vocab: Vocabulary = None,
+                 edge_vocab: Vocabulary = None,
                  **kwargs) -> None:
         """
         Create a new recurrent encoder.
@@ -56,6 +56,12 @@ class GraphEncoder(Encoder):
         self.edge_org_vocab=edge_org_vocab
         self.edge_trg_vocab=edge_trg_vocab
         self.positional_en_vocab=positional_en_vocab
+        ###
+        #New embeddings for the edges
+        ###
+        self.edge_embeddings= Embeddings(
+            **cfg["encoder"]["embeddings"], vocab_size=len(edge_vocab),
+            padding_idx=edge_vocab.stoi[PAD_TOKEN])
 
 
         self.gate_nn = Seq(Lin(hidden_size, hidden_size), ReLU(), Lin(hidden_size, 1))
@@ -114,7 +120,7 @@ class GraphEncoder(Encoder):
         # apply dropout to the emmbeding input
         embed_src = self.emb_dropout(embed_src)
         data=self.reorder_edges(embed_src,batch)
-        #pdb.set_trace()
+        pdb.set_trace()
         x, edge_index, batch = data.x.cuda(), data.edge_index.cuda(), data.batch.cuda()
         #pdb.set_trace()
         x = F.relu(self.ggnn(x, edge_index))

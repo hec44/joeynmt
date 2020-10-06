@@ -626,7 +626,7 @@ def train(cfg_file: str) -> None:
 
     # load the data
     if cfg["model"]["encoder"].get("type", "recurrent") == "graph":
-        train_data, dev_data, test_data, src_vocab, trg_vocab,\
+        train_data, dev_data, test_data, src_vocab, trg_vocab,edge_vocab\
         edge_org_vocab,edge_trg_vocab,positional_en_vocab = load_graph_data(
             data_cfg=cfg["data"])
     else:
@@ -636,8 +636,7 @@ def train(cfg_file: str) -> None:
     # build an encoder-decoder model
     if cfg["model"]["encoder"].get("type", "recurrent") == "graph":
         model = build_model(cfg["model"], src_vocab=src_vocab, trg_vocab=trg_vocab,\
-                            edge_org_vocab=edge_org_vocab,edge_trg_vocab=edge_trg_vocab,\
-                            positional_en_vocab=positional_en_vocab)
+                            edge_vocab=edge_vocab,)
     else:
         model = build_model(cfg["model"], src_vocab=src_vocab, trg_vocab=trg_vocab)
 
@@ -661,7 +660,7 @@ def train(cfg_file: str) -> None:
     src_vocab.to_file(src_vocab_file)
     trg_vocab_file = "{}/trg_vocab.txt".format(cfg["training"]["model_dir"])
     trg_vocab.to_file(trg_vocab_file)
-    #TODO: store edge and PE vocabs
+    #TODO: store edge vocab if not provided.
 
     # train the model
     trainer.train_and_validate(train_data=train_data, valid_data=dev_data)
@@ -671,7 +670,7 @@ def train(cfg_file: str) -> None:
     ckpt = "{}/{}.ckpt".format(trainer.model_dir, trainer.best_ckpt_iteration)
     output_name = "{:08d}.hyps".format(trainer.best_ckpt_iteration)
     output_path = os.path.join(trainer.model_dir, output_name)
-    test(cfg_file, ckpt=ckpt, output_path=output_path, logger=trainer.logger)
+    #test(cfg_file, ckpt=ckpt, output_path=output_path, logger=trainer.logger)
 
 
 if __name__ == "__main__":

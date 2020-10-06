@@ -21,11 +21,12 @@ class GraphTranslationDataset(data.Dataset):
                 data.Dataset.
         """
         if not isinstance(fields[0], (tuple, list)):
-            fields = [('src', fields[0]), ('trg', fields[1]),\
-                     ('edge_org', fields[2]), ('edge_trg', fields[3]), ('positional_en',fields[4])]
+            fields = [('src', fields[0]), ('trg', fields[1]),('edge',fields[2]\
+                     ('edge_org', fields[3]), ('edge_trg', fields[4]), ('positional_en',fields[5])]
 
         examples = []
-        source_words,origins,targets=self.read_conllu(src_file)
+        edges,origins,targets=self.read_conllu(src_file)
+        source_words=self.read_text_file(src_file)
         target_words=self.read_text_file(trg_file)
         target_words,source_words,origins,targets,pes\
            =self.gen_pes(target_words,source_words,origins,targets)
@@ -82,11 +83,9 @@ class GraphTranslationDataset(data.Dataset):
         f=open(path,'r')
         lines=f.readlines()
         f.close()
-        words=[]
         origins=[]
         targets=[]
         edges=[]
-        temp_words=[]
         temp_origins=[]
         temp_targets=[]
         temp_edges=[]
@@ -97,20 +96,18 @@ class GraphTranslationDataset(data.Dataset):
                 targets.append(np.array(temp_targets))
                 edges.append(temp_edges)
         
-                temp_words=[]
                 temp_origins=[]
                 temp_targets=[]
                 temp_edges=[]
     
             else:
                 splits=line.split('\t')
-                temp_words.append(splits[1])
                 temp_origins.append(int(splits[0]))
                 temp_targets.append(int(splits[6]))
                 temp_edges.append("<"+splits[7]+">")
-        for i in range(len(words)):
+        for i in range(len(edges)):
             new_origins=origins[i]-1
-            edges_positions=np.arange(len(words[i]),2*len(words[i]))
+            edges_positions=np.arange(len(edges[i]),2*len(edges[i]))
             new_targets=edges_positions.copy()
             
             edge_targets=targets[i]-1
@@ -120,7 +117,6 @@ class GraphTranslationDataset(data.Dataset):
             origins[i] = [int(num) for num in list(np.concatenate((new_origins,edge_origins)))]
             targets[i] = [int(num) for num in list(np.concatenate((new_targets,edge_targets)))]
             assert len(targets[i])==len(origins[i])
-            words[i]=words[i]+edges[i]
             
         return words,origins,targets
     

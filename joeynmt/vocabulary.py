@@ -186,6 +186,8 @@ def build_vocab(field: str, max_size: int, min_freq: int, dataset: Dataset,
 
             #add edge tokens
             elif field == "edge_org":
+                tokens.extend(i.edge)
+            elif field == "edge_org":
                 tokens.extend(i.edge_org)
             elif field == "edge_trg":
                 tokens.extend(i.edge_trg)

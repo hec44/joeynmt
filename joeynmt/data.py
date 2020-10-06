@@ -45,6 +45,7 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
     # load data from files
     src_lang = data_cfg["src"]
     trg_lang = data_cfg["trg"]
+    annotation = data_cfg["annotation"]
     train_path = data_cfg["train"]
     dev_path = data_cfg["dev"]
     test_path = data_cfg.get("test", None)
@@ -66,19 +67,28 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                            batch_first=True, lower=lowercase,
                            include_lengths=True)
 
+    edge_field = data.Field(init_token=BOS_TOKEN, eos_token=EOS_TOKEN,
+                           pad_token=PAD_TOKEN, tokenize=tok_fun,
+                           unk_token=UNK_TOKEN,
+                           batch_first=True, lower=lowercase,
+                           include_lengths=True)
+
     edge_org_field = data.Field(use_vocab = False,
                            batch_first=True,
                            include_lengths=True,pad_token=0)
+
     edge_trg_field = data.Field(use_vocab = False,
                            batch_first=True,
                            include_lengths=True,pad_token=0)
+
     positional_en_field = data.Field(use_vocab = False,
                            batch_first=True,
                            include_lengths=True,pad_token=0)
 
     train_data = dataLoader.GraphTranslationDataset(train_path +'.'+ src_lang,
                                     train_path +'.'+ trg_lang,
-                                    fields=(src_field, trg_field,edge_org_field,\
+                                    train_path + '.'+ annotation,
+                                    fields=(src_field, trg_field,edge_field,edge_org_field,\
                                     edge_trg_field,positional_en_field),
                                     filter_pred=
                                     lambda x: len(vars(x)['src'])
@@ -93,15 +103,22 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
 
     src_vocab_file = data_cfg.get("src_vocab", None)
     trg_vocab_file = data_cfg.get("trg_vocab", None)
+    edge_vocab_file = data_cfg.get("edge_vocab", None)
+    
 
 
 
     src_vocab = build_vocab(field="src", min_freq=src_min_freq,
                             max_size=src_max_size,
                             dataset=train_data, vocab_file=src_vocab_file)
+
     trg_vocab = build_vocab(field="trg", min_freq=trg_min_freq,
                             max_size=trg_max_size,
                             dataset=train_data, vocab_file=trg_vocab_file)
+
+    edge_vocab = build_vocab(field="edge", min_freq=0,
+                            max_size=999,
+                            dataset=train_data, vocab_file=edge_vocab_file)
 
     random_train_subset = data_cfg.get("random_train_subset", -1)
     if random_train_subset > -1:
@@ -130,8 +147,9 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                                     field=src_field)
     src_field.vocab = src_vocab
     trg_field.vocab = trg_vocab
+    edge_field.vocab = edge_vocab
 
-    return train_data, dev_data, test_data, src_vocab, trg_vocab,edge_org_field,edge_trg_field,positional_en_field
+    return train_data, dev_data, test_data, src_vocab, trg_vocab,edge_vocab,edge_org_field,edge_trg_field,positional_en_field
 
 def load_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                                   Vocabulary, Vocabulary):

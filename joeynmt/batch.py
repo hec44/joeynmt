@@ -52,6 +52,7 @@ class Batch:
         if hasattr(torch_batch, "edge_org"):
             self.edge_org, edge_org_lengths = torch_batch.edge_org
             self.edge_trg, edge_trg_lengths = torch_batch.edge_trg
+            self.edge ,self.edge_lenghts = torch_batch.edge
             self.pes, self.pes_lengths = torch_batch.positional_en
             if torch.all(edge_org_lengths.eq(edge_trg_lengths)):
                 self.edge_lengths=edge_org_lengths
