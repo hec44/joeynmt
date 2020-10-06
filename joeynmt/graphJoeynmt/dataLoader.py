@@ -21,7 +21,7 @@ class GraphTranslationDataset(data.Dataset):
                 data.Dataset.
         """
         if not isinstance(fields[0], (tuple, list)):
-            fields = [('src', fields[0]), ('trg', fields[1]),('edge',fields[2],\
+            fields = [('src', fields[0]), ('trg', fields[1]),('edge',fields[2]),\
                      ('edge_org', fields[3]), ('edge_trg', fields[4]), ('positional_en',fields[5])]
 
         examples = []
