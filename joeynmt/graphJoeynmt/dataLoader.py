@@ -91,7 +91,6 @@ class GraphTranslationDataset(data.Dataset):
         temp_edges=[]
         for line in lines:
             if line=='\n'or line=='':
-                words.append(temp_words)
                 origins.append(np.array(temp_origins))
                 targets.append(np.array(temp_targets))
                 edges.append(temp_edges)
