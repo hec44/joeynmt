@@ -10,7 +10,7 @@ class GraphTranslationDataset(data.Dataset):
     def sort_key(ex):
         return data.interleave_keys(len(ex.src), len(ex.trg))
 
-    def __init__(self, src_file, trg_file, fields, **kwargs):
+    def __init__(self, src_file, trg_file, edge_file, fields, **kwargs):
         """Create a TranslationDataset given paths and fields.
         Arguments:
             path: Common prefix of paths to the data files for both languages.
