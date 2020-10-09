@@ -140,7 +140,8 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
         if os.path.isfile(test_path + "." + trg_lang):
             test_data = dataLoader.GraphTranslationDataset(test_path +'.'+ src_lang,
                                     test_path +'.'+ trg_lang,
-                                    fields=(src_field, trg_field,edge_org_field,\
+                                    test_path + '.'+ annotation,
+                                    fields=(src_field, trg_field,edge_field,edge_org_field,\
                                     edge_trg_field,positional_en_field))
         else:
             # no target is given -> create dataset from src only
