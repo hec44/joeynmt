@@ -33,6 +33,7 @@ class GraphEncoder(Encoder):
                  emb_dropout: float = 0.,
                  freeze: bool = False,
                  edge_vocab: Vocabulary = None,
+                 cfg: dict = None,
                  **kwargs) -> None:
         """
         Create a new recurrent encoder.
@@ -52,15 +53,14 @@ class GraphEncoder(Encoder):
         self.emb_size = emb_size
         self.num_layers=num_layers
         self.hidden_size=hidden_size
+        self.edge_vocab=edge_vocab
 
-        self.edge_org_vocab=edge_org_vocab
-        self.edge_trg_vocab=edge_trg_vocab
-        self.positional_en_vocab=positional_en_vocab
+
         ###
         #New embeddings for the edges
         ###
         self.edge_embeddings= Embeddings(
-            **cfg["encoder"]["embeddings"], vocab_size=len(edge_vocab),
+            **cfg["embeddings"], vocab_size=len(edge_vocab),
             padding_idx=edge_vocab.stoi[PAD_TOKEN])
 
 
@@ -162,3 +162,4 @@ class GraphEncoder(Encoder):
     
         final_edges=final_edges+sentence_edges[1:]+[sentence_edges[0]]
       return range(num_sentences*len_sentences),final_edges
+
