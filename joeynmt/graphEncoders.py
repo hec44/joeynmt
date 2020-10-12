@@ -123,7 +123,7 @@ class GraphEncoder(Encoder):
         embed_edges = self.emb_dropout(embed_edges)
         embeddings= torch.cat((embed_src,embed_edges),dim=1)
         pdb.set_trace()
-        data=self.reorder_edges(embed_src,batch)
+        data=self.reorder_edges_words(embed_src,batch)
         pdb.set_trace()
         x, edge_index, batch = data.x.cuda(), data.edge_index.cuda(), data.batch.cuda()
         #pdb.set_trace()
