@@ -119,6 +119,10 @@ class GraphEncoder(Encoder):
 
         # apply dropout to the emmbeding input
         embed_src = self.emb_dropout(embed_src)
+        embed_edges = self.edge_embeddings(batch.edge)
+        embed_edges = self.emb_dropout(embed_edges)
+        embeddings= torch.cat((embed_src,embed_edges),dim=1)
+        pdb.set_trace()
         data=self.reorder_edges(embed_src,batch)
         pdb.set_trace()
         x, edge_index, batch = data.x.cuda(), data.edge_index.cuda(), data.batch.cuda()
@@ -132,6 +136,7 @@ class GraphEncoder(Encoder):
         pdb.set_trace()
         #hidden_concat=self.gAtt(x,data.batch)
         return output, hidden_concat
+    
     def reorder_edges(self,embed_src,batch):
         """
         Input: batch with edge_org,edge_trg, and x

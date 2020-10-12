@@ -76,6 +76,13 @@ class Batch:
             self.trg = self.trg.cuda()
             self.trg_mask = self.trg_mask.cuda()
 
+        if self.edge_org is not None:
+            self.edge_org = self.edge_org.cuda()
+            self.edge_trg = self.edge_trg.cuda()
+            self.edge  = self.edge.cuda()
+            self.pes = self.pes.cuda()
+
+
     def sort_by_src_lengths(self):
         """
         Sort by src length (descending) and return index to revert sort
