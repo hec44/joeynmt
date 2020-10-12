@@ -137,7 +137,7 @@ class GraphEncoder(Encoder):
         #hidden_concat=self.gAtt(x,data.batch)
         return output, hidden_concat
     
-    def reorder_edges(self,embed_src,batch):
+    def reorder_edges_words(self,embed,batch):
         """
         Input: batch with edge_org,edge_trg, and x
         return Batch of pytorch geometric
@@ -145,13 +145,24 @@ class GraphEncoder(Encoder):
         data_list=[]
         orgs=[]
         trgs=[]
+        max_lenght=int(batch.src_lengths[0])
+
         for i,edge_orgs in enumerate(batch.edge_org):
+            curr_lenght=int(batch.batch.src_lengths[0])
+            offset=max_lenght-curr_lenght
             for j,edge_org in enumerate(edge_orgs): 
                 org=edge_org
                 trg=batch.edge_trg[i][j]
                 if int(org)!=0 and int(trg[i][j])!=0:
-                    orgs.append(int(org))
-                    trgs.append(int(trg))
+                    if int(org)>curr_lenght:
+                        orgs.append(int(org)+offset)
+                    else:
+                        orgs.append(int(org))
+                    if int(trgs)>curr_lenght:
+                        trgs.append(int(trgs)+offset)
+                    else:
+                        trgs.append(int(trgs))
+            pdb.set_trace()
             data_list.append(Data(embed_src[i],torch.tensor([orgs,trgs],dtype=torch.long)))
 
         return Batch.from_data_list(data_list)

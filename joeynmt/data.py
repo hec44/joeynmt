@@ -67,7 +67,7 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                            batch_first=True, lower=lowercase,
                            include_lengths=True)
 
-    edge_field = data.Field(init_token=BOS_TOKEN, eos_token=EOS_TOKEN,
+    edge_field = data.Field(init_token=None, eos_token=None,
                            pad_token=PAD_TOKEN, tokenize=tok_fun,
                            unk_token=UNK_TOKEN,
                            batch_first=True, lower=lowercase,
