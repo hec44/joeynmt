@@ -148,7 +148,7 @@ class GraphEncoder(Encoder):
         max_lenght=int(batch.src_lengths[0])
 
         for i,edge_orgs in enumerate(batch.edge_org):
-            curr_lenght=int(batch.batch.src_lengths[0])
+            curr_lenght=int(batch.src_lengths[0])
             offset=max_lenght-curr_lenght
             for j,edge_org in enumerate(edge_orgs): 
                 org=edge_org
