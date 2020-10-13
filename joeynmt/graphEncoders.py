@@ -133,7 +133,6 @@ class GraphEncoder(Encoder):
         hidden_concat=self.gAtt(x,data.batch.cuda())
         output=x.view((embed_src.shape[0],embed_src.shape[1],-1))
         #hidden_concat=torch.zeros((batch_size,self.hidden_size))
-        pdb.set_trace()
         #hidden_concat=self.gAtt(x,data.batch)
         return output, hidden_concat
     
@@ -146,24 +145,23 @@ class GraphEncoder(Encoder):
         orgs=[]
         trgs=[]
         max_lenght=int(batch.src_lengths[0])
-
         for i,edge_orgs in enumerate(batch.edge_org):
             curr_lenght=int(batch.src_lengths[0])
             offset=max_lenght-curr_lenght
             for j,edge_org in enumerate(edge_orgs): 
                 org=edge_org
                 trg=batch.edge_trg[i][j]
-                if int(org)!=0 and int(trg[i][j])!=0:
+                if int(org)!=0 and int(trg)!=0:
                     if int(org)>curr_lenght:
                         orgs.append(int(org)+offset)
                     else:
                         orgs.append(int(org))
-                    if int(trgs)>curr_lenght:
-                        trgs.append(int(trgs)+offset)
+                    if int(trg)>curr_lenght:
+                        trgs.append(int(trg)+offset)
                     else:
-                        trgs.append(int(trgs))
-            pdb.set_trace()
-            data_list.append(Data(embed_src[i],torch.tensor([orgs,trgs],dtype=torch.long)))
+                        trgs.append(int(trg))
+
+            data_list.append(Data(embed[i],torch.tensor([orgs,trgs],dtype=torch.long)))
 
         return Batch.from_data_list(data_list)
     def reorder_pes(self,x):
