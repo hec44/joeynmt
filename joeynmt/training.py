@@ -303,7 +303,7 @@ class TrainManager:
             self.optimizer.zero_grad()
             count = self.current_batch_multiplier - 1
             epoch_loss = 0
-            pdb.set_trace()
+            #pdb.set_trace()
 
             for i, batch in enumerate(iter(train_iter)):
                 # reactivate training

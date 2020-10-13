@@ -122,19 +122,32 @@ class GraphEncoder(Encoder):
         embed_edges = self.edge_embeddings(batch.edge)
         embed_edges = self.emb_dropout(embed_edges)
         embeddings= torch.cat((embed_src,embed_edges),dim=1)
-        pdb.set_trace()
-        data=self.reorder_edges_words(embed_src,batch)
         #pdb.set_trace()
-        x, edge_index, batch = data.x, data.edge_index, data.batch
+        data=self.reorder_edges_words(embeddings,batch)
         #pdb.set_trace()
-        x = F.relu(self.ggnn(x, edge_index))
+        x, edge_index = data.x, data.edge_index
+        #pdb.set_trace()
+        x = F.relu(self.ggnn(x, edge_index.cuda()))
         #x= self.pool1(x, x)
+        
+        #hidden_concat=self.gAtt(x,data.batch)
+        output=x.view((embeddings.shape[0],embeddings.shape[1],-1))
+        output=output[:,:embed_src.shape[1]]
+
+        inds=[int(i*output.shape[1]+batch.src_lengths[i]) for i in range(output.shape[0])]
+        tmp=output.reshape((output.shape[0]*output.shape[1],\
+                            output.shape[2]))
         #pdb.set_trace()
-        hidden_concat=self.gAtt(x,data.batch)
-        output=x.view((embed_src.shape[0],embed_src.shape[1],-1))
+        hidden=tmp[inds]
+        #indices=batch.src_lengths.repeat(1,output.shape[2])
+        #out1=output.gather(1,batch.src_lengths.view(-1, 1, 1).expand(output.size(0), 1, output.size(2)).cuda())
+        #out2=output.gather(0,batch.src_lengths.view(-1, 1, 1).expand(output.size(0), 1, output.size(2)).cuda())
+        #out3=output.gather(0,indices.unsqueeze(1).cuda())
+        #out4=output.gather(-1,batch.src_lengths.view(-1, 1, 1).expand(output.size(0), 1, output.size(2)).cuda())
+        #pdb.set_trace()
         #hidden_concat=torch.zeros((batch_size,self.hidden_size))
         #hidden_concat=self.gAtt(x,data.batch)
-        return output, hidden_concat
+        return output, hidden
     
     def reorder_edges_words(self,embed,batch):
         """
