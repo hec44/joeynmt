@@ -31,7 +31,7 @@ class GraphTranslationDataset(data.Dataset):
         target_words=self.read_text_file(trg_file)
         target_words,source_words,origins,targets,pes\
            =self.gen_pes(target_words,source_words,edges,origins,targets)
-        pdb.set_trace()
+        
         if len(source_words) != len(target_words):
           target_words=target_words[:-1]
         assert len(source_words)==len(target_words),"Mismatch of source and tagret sentences"
@@ -119,7 +119,7 @@ class GraphTranslationDataset(data.Dataset):
             edges_positions=np.arange(len(edges[i])+1,2*len(edges[i])+1)
             new_targets=edges_positions.copy()
             
-            edge_targets=targets[i]
+            edge_targets=targets[i]-1
             root_pos=np.argmin(edge_targets)
             edge_targets = np.delete(edge_targets, [root_pos])
             edge_origins = np.delete(edges_positions,[root_pos])
