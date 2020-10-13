@@ -115,17 +115,20 @@ class GraphTranslationDataset(data.Dataset):
     
 
         for i in range(len(edges)):
-            new_origins=origins[i]-1
-            edges_positions=np.arange(len(edges[i]),2*len(edges[i]))
+            new_origins=origins[i]
+            edges_positions=np.arange(len(edges[i])+1,2*len(edges[i])+1)
             new_targets=edges_positions.copy()
             
-            edge_targets=targets[i]-1
+            edge_targets=targets[i]
             root_pos=np.argmin(edge_targets)
             edge_targets = np.delete(edge_targets, [root_pos])
             edge_origins = np.delete(edges_positions,[root_pos])
             origins[i] = [int(num) for num in list(np.concatenate((new_origins,edge_origins)))]
             targets[i] = [int(num) for num in list(np.concatenate((new_targets,edge_targets)))]
             assert len(targets[i])==len(origins[i])
+        for i in range(len(edges)+1):
+            origins[i].append(i)
+            targets[i].append(i+1)
             
         return edges,origins,targets
     
