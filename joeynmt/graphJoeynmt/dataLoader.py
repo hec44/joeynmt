@@ -26,7 +26,7 @@ class GraphTranslationDataset(data.Dataset):
 
         examples = []
         edges,origins,targets=self.read_conllu(edge_file)
-        
+        pdb.set_trace()
         source_words=self.read_text_file(src_file)
         target_words=self.read_text_file(trg_file)
         target_words,source_words,origins,targets,pes\
@@ -130,6 +130,9 @@ class GraphTranslationDataset(data.Dataset):
             for j in range(len(edges[i])):
                 origins[i].append(j)
                 targets[i].append(j+1)
+                origins[i].append(len(edges[i])+i)
+                targets[i].append(j)
+            
             
         return edges,origins,targets
     
