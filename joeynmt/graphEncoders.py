@@ -123,14 +123,17 @@ class GraphEncoder(Encoder):
         embed_edges = self.emb_dropout(embed_edges)
         embeddings= torch.cat((embed_src,embed_edges),dim=1)
         #pdb.set_trace()
-        data=self.reorder_edges_words(embeddings,batch)
-        #pdb.set_trace()
-        x, edge_index = data.x, data.edge_index
-        #pdb.set_trace()
-        x = F.relu(self.ggnn(x, edge_index.cuda()))
-        #x= self.pool1(x, x)
+        try:
+            data=self.reorder_edges_words(embeddings,batch)
+            #pdb.set_trace()
+            x, edge_index = data.x, data.edge_index
+            #pdb.set_trace()
+            x = F.relu(self.ggnn(x, edge_index.cuda()))
+            #x= self.pool1(x, x)
+        except:
+            pdb.set_trace()
 
-        wor1 word2 word3 </s> <root> <punct> <nsubj>
+      
         
 
         output=x.view((embeddings.shape[0],embeddings.shape[1],-1))
