@@ -26,12 +26,12 @@ class GraphTranslationDataset(data.Dataset):
 
         examples = []
         edges,origins,targets=self.read_conllu(edge_file)
-        pdb.set_trace()
+        
         source_words=self.read_text_file(src_file)
         target_words=self.read_text_file(trg_file)
-        target_words,source_words,origins,targets,pes\
+        target_words,source_words,edges,origins,targets,pes\
            =self.gen_pes(target_words,source_words,edges,origins,targets)
-        
+
         if len(source_words) != len(target_words):
           target_words=target_words[:-1]
         assert len(source_words)==len(target_words),"Mismatch of source and tagret sentences"
@@ -130,7 +130,7 @@ class GraphTranslationDataset(data.Dataset):
             for j in range(len(edges[i])):
                 origins[i].append(j)
                 targets[i].append(j+1)
-                origins[i].append(len(edges[i])+i)
+                origins[i].append(len(edges[i])+1)
                 targets[i].append(j)
             
             
@@ -193,5 +193,6 @@ class GraphTranslationDataset(data.Dataset):
           del orgs[i]
           del trgs[i]
           del target_words[i]
+          del edges[i]
 
-        return target_words,source_words,orgs,trgs,pes
+        return target_words,source_words,edges,orgs,trgs,pes
