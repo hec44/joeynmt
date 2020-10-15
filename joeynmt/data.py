@@ -85,6 +85,7 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                            batch_first=True,
                            include_lengths=True,pad_token=0)
 
+    print("loading training data")
     train_data = dataLoader.GraphTranslationDataset(train_path +'.'+ src_lang,
                                     train_path +'.'+ trg_lang,
                                     train_path + '.'+ annotation,
@@ -95,7 +96,7 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
                                     <= max_sent_length
                                     and len(vars(x)['trg'])
                                     <= max_sent_length)
-
+    print("end loading training data")
     src_max_size = data_cfg.get("src_voc_limit", sys.maxsize)
     src_min_freq = data_cfg.get("src_voc_min_freq", 1)
     trg_max_size = data_cfg.get("trg_voc_limit", sys.maxsize)
@@ -104,22 +105,20 @@ def load_graph_data(data_cfg: dict) -> (Dataset, Dataset, Optional[Dataset],
     src_vocab_file = data_cfg.get("src_vocab", None)
     trg_vocab_file = data_cfg.get("trg_vocab", None)
     edge_vocab_file = data_cfg.get("edge_vocab", None)
-    
 
-
-
+    print("loading train vocab")
     src_vocab = build_vocab(field="src", min_freq=src_min_freq,
                             max_size=src_max_size,
                             dataset=train_data, vocab_file=src_vocab_file)
-
+    print("loading target vocab")
     trg_vocab = build_vocab(field="trg", min_freq=trg_min_freq,
                             max_size=trg_max_size,
                             dataset=train_data, vocab_file=trg_vocab_file)
-
+    print("loading edge vocab")
     edge_vocab = build_vocab(field="edge", min_freq=0,
                             max_size=999,
                             dataset=train_data, vocab_file=edge_vocab_file)
-
+    print("end loading edge vocab")
     random_train_subset = data_cfg.get("random_train_subset", -1)
     if random_train_subset > -1:
         # select this many training examples randomly and discard the rest
