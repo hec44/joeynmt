@@ -139,7 +139,7 @@ class GraphEncoder(Encoder):
         output=x.view((embeddings.shape[0],embeddings.shape[1],-1))
         output=output[:,:embed_src.shape[1]]
 
-        inds=[int(i*output.shape[1]+batch.src_lengths[i]) for i in range(output.shape[0])]
+        inds=[int(i*output.shape[1]+batch.src_lengths[i])-1 for i in range(output.shape[0])]
         tmp=output.reshape((output.shape[0]*output.shape[1],\
                             output.shape[2]))
        

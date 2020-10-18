@@ -130,8 +130,8 @@ class GraphTranslationDataset(data.Dataset):
             for j in range(len(edges[i])):
                 origins[i].append(j)
                 targets[i].append(j+1)
-                origins[i].append(len(edges[i])+1)
-                targets[i].append(j)
+                origins[i].append(j)
+                targets[i].append(len(edges[i])+1)
             
             
         return edges,origins,targets
