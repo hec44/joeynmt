@@ -258,6 +258,7 @@ def build_model(cfg: dict = None,
                                      emb_size=src_embed.embedding_dim,
                                      emb_dropout=enc_emb_dropout,
                                      edge_vocab = edge_vocab,
+                                     source_vocab = src_vocab,
                                      cfg=cfg["encoder"])
     elif cfg["encoder"].get("type", "recurrent") == "recurrent":
         encoder = RecurrentEncoder(**cfg["encoder"],

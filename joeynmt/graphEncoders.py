@@ -17,7 +17,6 @@ from joeynmt.vocabulary import Vocabulary
 import torch.nn.functional as F
 import pdb
 
-
 class GraphEncoder(Encoder):
     """
     Dummy encoder based on Transformer Encoder
@@ -33,6 +32,7 @@ class GraphEncoder(Encoder):
                  emb_dropout: float = 0.,
                  freeze: bool = False,
                  edge_vocab: Vocabulary = None,
+                 source_vocab: Vocabulary = None,
                  cfg: dict = None,
                  **kwargs) -> None:
         """
@@ -54,6 +54,7 @@ class GraphEncoder(Encoder):
         self.num_layers=num_layers
         self.hidden_size=hidden_size
         self.edge_vocab=edge_vocab
+        self.source_vocab=source_vocab
 
 
         ###
@@ -119,6 +120,7 @@ class GraphEncoder(Encoder):
 
         # apply dropout to the emmbeding input
         embed_src = self.emb_dropout(embed_src)
+        embed_src = self.agreggate_embeddings(embed_src,batch)
         embed_edges = self.edge_embeddings(batch.edge)
         embed_edges = self.emb_dropout(embed_edges)
         embeddings= torch.cat((embed_src,embed_edges),dim=1)
@@ -146,6 +148,28 @@ class GraphEncoder(Encoder):
         hidden=tmp[inds]
 
         return output, hidden
+
+
+    def agreggate_embeddings(self,src_embeddings,batch):
+        
+        index_array=torch.zeros(batch.src.shape)
+        for i,sentence in enumerate(batch.src):
+            index=0
+            for j,word in enumerate(sentence):
+                index_array[i,j]=index
+                if not("@@" in self.source_vocab.itos[word]):                  
+                    index+=1
+    
+        #out_embeddings = torch.new_full((batch.src.shape[0],max_index+1), self.source_vocab.stoi[PAD_TOKEN], device=None, requires_grad=True)
+        out = scatter_mean(src_embeddings, index_array,dim=1)
+
+        return out
+
+
+
+
+
+
     
     def reorder_edges_words(self,embed,batch):
         """
