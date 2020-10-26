@@ -70,7 +70,14 @@ class Model(nn.Module):
         :param trg_mask: target mask
         :return: decoder outputs
         """
-        encoder_output, encoder_hidden = self.encode(src=src,
+        if batch!=None:
+          #this is the case of graph encoders
+          encoder_output, encoder_hidden,src_mask = self.encode(src=src,
+                                                     src_length=src_lengths,
+                                                     src_mask=src_mask,batch=batch)
+
+        else:
+          encoder_output, encoder_hidden = self.encode(src=src,
                                                      src_length=src_lengths,
                                                      src_mask=src_mask,batch=batch)
         unroll_steps = trg_input.size(1)

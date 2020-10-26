@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
+from torch_scatter import scatter_mean
+
 from torch_geometric.nn import GlobalAttention,GatedGraphConv,TopKPooling
 from torch_geometric.data import Data,Batch
 from torch.nn import Sequential as Seq, Linear as Lin, ReLU
@@ -97,7 +99,7 @@ class GraphEncoder(Encoder):
     def forward(self, embed_src: Tensor, src_length: Tensor, mask: Tensor,
                 batch: Batch) \
             -> (Tensor, Tensor):
-        """
+        """new_mask.unsqueeze(1).shape
         Applies a bidirectional RNN to sequence of embeddings x.
         The input mini-batch x needs to be sorted by src length.
         x and mask should have the same dimensions [batch, time, dim].
@@ -120,7 +122,7 @@ class GraphEncoder(Encoder):
 
         # apply dropout to the emmbeding input
         embed_src = self.emb_dropout(embed_src)
-        embed_src = self.agreggate_embeddings(embed_src,batch)
+        embed_src,new_mask,lens = self.agreggate_embeddings(embed_src,batch)
         embed_edges = self.edge_embeddings(batch.edge)
         embed_edges = self.emb_dropout(embed_edges)
         embeddings= torch.cat((embed_src,embed_edges),dim=1)
@@ -130,7 +132,7 @@ class GraphEncoder(Encoder):
             #pdb.set_trace()
             x, edge_index = data.x, data.edge_index
             #pdb.set_trace()
-            x = F.relu(self.ggnn(x, edge_index.cuda()))
+            x = F.relu(self.ggnn(x, edge_index))
             #x= self.pool1(x, x)
         except:
             pdb.set_trace()
@@ -141,35 +143,41 @@ class GraphEncoder(Encoder):
         output=x.view((embeddings.shape[0],embeddings.shape[1],-1))
         output=output[:,:embed_src.shape[1]]
 
-        inds=[int(i*output.shape[1]+batch.src_lengths[i])-1 for i in range(output.shape[0])]
+        inds=[int(i*output.shape[1]+lens[i]) for i in range(output.shape[0])]
         tmp=output.reshape((output.shape[0]*output.shape[1],\
                             output.shape[2]))
        
         hidden=tmp[inds]
-
-        return output, hidden
+        #pdb.set_trace()
+        return output, hidden,new_mask
 
 
     def agreggate_embeddings(self,src_embeddings,batch):
-        
+
         index_array=torch.zeros(batch.src.shape)
+        sentences=[]
         for i,sentence in enumerate(batch.src):
             index=0
+            sent=[]
             for j,word in enumerate(sentence):
                 index_array[i,j]=index
                 if not("@@" in self.source_vocab.itos[word]):                  
                     index+=1
-    
+                sent.append(self.source_vocab.itos[word])
+            sentences.append(sent)
+        #pdb.set_trace()
+        #self.source_vocab.itos[3]
+        index_array=index_array.type(torch.int64)
+        lens=index_array.max(dim=1).values
+        mask_size=int(max(lens))+1
+        #new_mask=torch.arange(mask_size).cuda().expand(len(lens), mask_size) <= lens.unsqueeze(1)
+        new_mask=torch.arange(mask_size).expand(len(lens), mask_size) <= lens.unsqueeze(1)
+        new_mask=new_mask.unsqueeze(1)
+        #pdb.set_trace()
         #out_embeddings = torch.new_full((batch.src.shape[0],max_index+1), self.source_vocab.stoi[PAD_TOKEN], device=None, requires_grad=True)
         out = scatter_mean(src_embeddings, index_array,dim=1)
-
-        return out
-
-
-
-
-
-
+       
+        return out,new_mask,lens
     
     def reorder_edges_words(self,embed,batch):
         """
@@ -211,4 +219,3 @@ class GraphEncoder(Encoder):
     
         final_edges=final_edges+sentence_edges[1:]+[sentence_edges[0]]
       return range(num_sentences*len_sentences),final_edges
-

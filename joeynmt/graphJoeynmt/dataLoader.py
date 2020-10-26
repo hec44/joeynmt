@@ -131,9 +131,8 @@ class GraphTranslationDataset(data.Dataset):
                 origins[i].append(j)
                 targets[i].append(j+1)
                 origins[i].append(j)
-                targets[i].append(len(edges[i])+1)
-            
-            
+                targets[i].append(len(edges[i]))
+             
         return edges,origins,targets
     
     def read_text_file(self,path):
