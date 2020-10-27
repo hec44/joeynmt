@@ -91,8 +91,8 @@ class GraphTranslationDataset(data.Dataset):
         temp_edges=[]
         for line in lines:
             if line=='\n'or line=='':
-                origins.append(np.array(temp_origins))
-                targets.append(np.array(temp_targets))
+                origins.append(temp_origins)
+                targets.append(temp_targets)
                 edges.append(temp_edges)
         
                 temp_origins=[]
@@ -101,12 +101,13 @@ class GraphTranslationDataset(data.Dataset):
     
             else:
                 splits=line.split('\t')
-                temp_origins.append(int(splits[0]))
-                temp_targets.append(int(splits[6]))
+                if int(splits[6])-1 >=0:
+                  temp_origins.append(int(splits[0])-1)
+                  temp_targets.append(int(splits[6])-1)
                 temp_edges.append("<"+splits[7]+">")
         if len(temp_edges)>0:
-          origins.append(np.array(temp_origins))
-          targets.append(np.array(temp_targets))
+          origins.append(temp_origins)
+          targets.append(temp_targets)
           edges.append(temp_edges)
         
           temp_origins=[]
@@ -115,24 +116,12 @@ class GraphTranslationDataset(data.Dataset):
     
 
         for i in range(len(edges)):
-            new_origins=origins[i]-1
-            edges_positions=np.arange(len(edges[i])+1,2*len(edges[i])+1)
-            new_targets=edges_positions.copy()
-            
-            edge_targets=targets[i]-1
-            root_pos=np.argmin(edge_targets)
-            edge_targets = np.delete(edge_targets, [root_pos])
-            edge_origins = np.delete(edges_positions,[root_pos])
-            origins[i] = [int(num) for num in list(np.concatenate((new_origins,edge_origins)))]
-            targets[i] = [int(num) for num in list(np.concatenate((new_targets,edge_targets)))]
-            assert len(targets[i])==len(origins[i])
-        for i in range(len(edges)):
             for j in range(len(edges[i])):
                 origins[i].append(j)
                 targets[i].append(j+1)
                 origins[i].append(j)
                 targets[i].append(len(edges[i]))
-             
+        #pdb.set_trace()   
         return edges,origins,targets
     
     def read_text_file(self,path):

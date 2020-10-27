@@ -17,6 +17,7 @@ from joeynmt.transformer_layers import TransformerEncoderLayer,PositionalEncodin
 from joeynmt.encoders import Encoder
 from joeynmt.vocabulary import Vocabulary
 import torch.nn.functional as F
+from torch_geometric.nn import GCNConv
 import pdb
 
 class GraphEncoder(Encoder):
@@ -73,6 +74,9 @@ class GraphEncoder(Encoder):
 
         self.ggnn = GatedGraphConv(
             hidden_size, num_layers)
+        self.conv1 = GCNConv(emb_size, hidden_size)
+        self.conv2 = GCNConv(hidden_size, hidden_size)
+        self.conv3 = GCNConv(hidden_size, hidden_size)
 
         self._output_size = hidden_size
 
@@ -121,21 +125,24 @@ class GraphEncoder(Encoder):
                                          mask=mask)
 
         # apply dropout to the emmbeding input
-        embed_src = self.emb_dropout(embed_src)
-        embed_src,new_mask,lens = self.agreggate_embeddings(embed_src,batch)
-        embed_edges = self.edge_embeddings(batch.edge)
-        embed_edges = self.emb_dropout(embed_edges)
-        embeddings= torch.cat((embed_src,embed_edges),dim=1)
+        embeddings = self.emb_dropout(embed_src)
+        embeddings,new_mask,lens = self.agreggate_embeddings(embed_src,batch)
+        #embed_edges = self.edge_embeddings(batch.edge)
+        #embed_edges = self.emb_dropout(embed_edges)
+        #embeddings= torch.cat((embed_src,embed_edges),dim=1)
         #pdb.set_trace()
-        try:
-            data=self.reorder_edges_words(embeddings,batch)
+        #try:
+        data=self.reorder_edges_words(embeddings,batch)
             #pdb.set_trace()
-            x, edge_index = data.x, data.edge_index
+        x, edge_index = data.x, data.edge_index
             #pdb.set_trace()
-            x = F.relu(self.ggnn(x, edge_index))
-            #x= self.pool1(x, x)
-        except:
-            pdb.set_trace()
+        x = self.conv1(x, edge_index.cuda())
+        x = x.relu()
+        x = self.conv2(x, edge_index.cuda())
+        #x = x.relu()
+        #x = self.conv3(x, edge_index.cuda())
+        #except:
+        #    pdb.set_trace()
 
       
         
@@ -167,11 +174,11 @@ class GraphEncoder(Encoder):
             sentences.append(sent)
         #pdb.set_trace()
         #self.source_vocab.itos[3]
-        index_array=index_array.type(torch.int64)
+        index_array=index_array.type(torch.int64).cuda()
         lens=index_array.max(dim=1).values
         mask_size=int(max(lens))+1
         #new_mask=torch.arange(mask_size).cuda().expand(len(lens), mask_size) <= lens.unsqueeze(1)
-        new_mask=torch.arange(mask_size).expand(len(lens), mask_size) <= lens.unsqueeze(1)
+        new_mask=torch.arange(mask_size).cuda().expand(len(lens), mask_size) <= lens.unsqueeze(1)
         new_mask=new_mask.unsqueeze(1)
         #pdb.set_trace()
         #out_embeddings = torch.new_full((batch.src.shape[0],max_index+1), self.source_vocab.stoi[PAD_TOKEN], device=None, requires_grad=True)
@@ -191,10 +198,12 @@ class GraphEncoder(Encoder):
         for i,edge_orgs in enumerate(batch.edge_org):
             curr_lenght=int(batch.src_lengths[0])
             offset=max_lenght-curr_lenght
+            #print(offset)
             for j,edge_org in enumerate(edge_orgs): 
                 org=edge_org
                 trg=batch.edge_trg[i][j]
-                if int(org)!=0 and int(trg)!=0:
+                if not(int(org)==0 and int(trg)==0):
+                    """
                     if int(org)>curr_lenght:
                         orgs.append(int(org)+offset)
                     else:
@@ -203,7 +212,10 @@ class GraphEncoder(Encoder):
                         trgs.append(int(trg)+offset)
                     else:
                         trgs.append(int(trg))
-
+                    """
+                    orgs.append(int(org))
+                    trgs.append(int(trg))
+            #pdb.set_trace()
             data_list.append(Data(embed[i],torch.tensor([orgs,trgs],dtype=torch.long)))
 
         return Batch.from_data_list(data_list)
