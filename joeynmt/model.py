@@ -79,7 +79,7 @@ class Model(nn.Module):
         else:
           encoder_output, encoder_hidden = self.encode(src=src,
                                                      src_length=src_lengths,
-                                                     src_mask=src_mask,batch=batch)
+                                                     src_mask=src_mask)
         unroll_steps = trg_input.size(1)
         return self.decode(encoder_output=encoder_output,
                            encoder_hidden=encoder_hidden,
@@ -97,7 +97,10 @@ class Model(nn.Module):
         :param src_mask:
         :return: encoder outputs (output, hidden_concat)
         """
-        return self.encoder(self.src_embed(src), src_length, src_mask,batch)
+        if batch!=None:
+          return self.encoder(self.src_embed(src), src_length, src_mask,batch)
+        else:
+          return self.encoder(self.src_embed(src), src_length, src_mask)
 
     def decode(self, encoder_output: Tensor, encoder_hidden: Tensor,
                src_mask: Tensor, trg_input: Tensor,
@@ -136,7 +139,7 @@ class Model(nn.Module):
         :return: batch_loss: sum of losses over non-pad elements in the batch
         """
         # pylint: disable=unused-variable
-        if hasattr(batch,'edge_org'):
+        if None!=batch.edge_org:
             out, hidden, att_probs, _ = self.forward(
                 src=batch.src, trg_input=batch.trg_input,
                 src_mask=batch.src_mask, src_lengths=batch.src_lengths,
@@ -168,7 +171,7 @@ class Model(nn.Module):
         :return: stacked_output: hypotheses for batch,
             stacked_attention_scores: attention scores for batch
         """
-        encoder_output, encoder_hidden = self.encode(
+        encoder_output, encoder_hidden,src_mask = self.encode(
             batch.src, batch.src_lengths,
             batch.src_mask,batch=batch)
 
@@ -181,7 +184,7 @@ class Model(nn.Module):
             stacked_output, stacked_attention_scores = greedy(
                     encoder_hidden=encoder_hidden,
                     encoder_output=encoder_output, eos_index=self.eos_index,
-                    src_mask=batch.src_mask, embed=self.trg_embed,
+                    src_mask=src_mask, embed=self.trg_embed,
                     bos_index=self.bos_index, decoder=self.decoder,
                     max_output_length=max_output_length)
             # batch, time, max_src_length
@@ -190,7 +193,7 @@ class Model(nn.Module):
                     beam_search(
                         size=beam_size, encoder_output=encoder_output,
                         encoder_hidden=encoder_hidden,
-                        src_mask=batch.src_mask, embed=self.trg_embed,
+                        src_mask=src_mask, embed=self.trg_embed,
                         max_output_length=max_output_length,
                         alpha=beam_alpha, eos_index=self.eos_index,
                         pad_index=self.pad_index,
