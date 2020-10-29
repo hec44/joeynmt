@@ -72,11 +72,20 @@ class GraphEncoder(Encoder):
         self.gAtt = GlobalAttention(self.gate_nn)
 
 
-        self.ggnn = GatedGraphConv(
+
+        self.ggnn1 = GatedGraphConv(
             hidden_size, num_layers)
-        self.conv1 = GCNConv(emb_size, hidden_size)
-        self.conv2 = GCNConv(hidden_size, hidden_size)
-        self.conv3 = GCNConv(hidden_size, hidden_size)
+        self.ggnn2 = GatedGraphConv(
+            hidden_size, num_layers)
+        self.ggnn3 = GatedGraphConv(
+            hidden_size, num_layers)
+        self.ggnn4 = GatedGraphConv(
+            hidden_size, num_layers)
+        self.ggnn5 = GatedGraphConv(
+            hidden_size, num_layers)
+        self.ggnn6 = GatedGraphConv(
+            hidden_size, num_layers)
+
 
         self._output_size = hidden_size
 
@@ -136,9 +145,17 @@ class GraphEncoder(Encoder):
             #pdb.set_trace()
         x, edge_index = data.x, data.edge_index
             #pdb.set_trace()
-        x = self.conv1(x, edge_index.cuda())
-        x = x.relu()
-        x = self.conv2(x, edge_index.cuda())
+        x = self.ggnn1(x, edge_index.cuda())
+        x = x.sigmoid()
+        x = self.ggnn2(x, edge_index.cuda())
+        x = x.sigmoid()
+        x = self.ggnn3(x, edge_index.cuda())
+        x = x.sigmoid()
+        x = self.ggnn4(x, edge_index.cuda())
+        x = x.sigmoid()
+        x = self.ggnn5(x, edge_index.cuda())
+        x = x.sigmoid()
+        x = self.ggnn6(x, edge_index.cuda())
         #x = x.relu()
         #x = self.conv3(x, edge_index.cuda())
         #except:
@@ -148,7 +165,7 @@ class GraphEncoder(Encoder):
         
 
         output=x.view((embeddings.shape[0],embeddings.shape[1],-1))
-        output=output[:,:embed_src.shape[1]]
+
 
         inds=[int(i*output.shape[1]+lens[i]) for i in range(output.shape[0])]
         tmp=output.reshape((output.shape[0]*output.shape[1],\
